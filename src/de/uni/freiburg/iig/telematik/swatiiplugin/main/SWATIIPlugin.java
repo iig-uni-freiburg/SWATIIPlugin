@@ -9,6 +9,7 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.main;
  * Imports
  */
 import alice.tuprolog.*;
+import de.uni.freiburg.iig.telematik.swatiiplugin.data.*;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.*;
 
 /**
@@ -23,17 +24,25 @@ public class SWATIIPlugin {
     public static void main(String[] args) {
         try {
             // Regel erstellen
-            Rule rl = new Rule(RuleType.EXISTS_A);
-            rl.setaType("D");
+            Rule rl = new Rule(RuleType.FOUR_EYES);
+            rl.setaType("A");
             rl.setbType("B");
             rl.setcType("C");
 
-            // Traces und Regel zusammensetzen
+            // Trace erstellen
+            LogTrace trace = new LogTrace();         
+            LogEntry log0 = new LogEntry(ActivityStatus.COMPLETE, "B", "s1", null, 1440140438317L); 
+            trace.add(log0);
+            LogEntry log1 = new LogEntry(ActivityStatus.COMPLETE, "C", null, null, 1440140438322L);
+            trace.add(log1);
+            LogEntry log2 = new LogEntry(ActivityStatus.COMPLETE, "D", null, null, 1440140438327L);
+            trace.add(log2);
+            LogEntry log3 = new LogEntry(ActivityStatus.COMPLETE, "A", "s1", null, 1440140438332L);
+            trace.add(log3);
+            
+            // Traces und Regel zusammensetzen            
             String query = new String();
-            query += "hap(activity(complete,'B','s1','null'),1440140438317).\n";
-            query += "hap(activity(complete,'C','null','null'),1440140438322).\n";
-            query += "hap(activity(complete,'D','null','null'),1440140438327).\n";
-            query += "hap(activity(complete,'A','s1','null'),1440140438332).\n";
+            query += trace.toPrologTrace();
             query += "\n";
             query += "\n";
             query += rl.asString();
