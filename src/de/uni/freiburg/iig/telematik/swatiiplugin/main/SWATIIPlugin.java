@@ -4,8 +4,15 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.main;
  * Imports
  */
 import alice.tuprolog.*;
-import de.uni.freiburg.iig.telematik.swatiiplugin.data.*;
+import de.invation.code.toval.parser.ParserException;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.*;
+import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
+import de.uni.freiburg.iig.telematik.sewol.log.LogTrace;
+import de.uni.freiburg.iig.telematik.sewol.log.LogEntry;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 
 /**
  *
@@ -22,22 +29,24 @@ public class SWATIIPlugin {
             Rule rl = new Rule(RuleType.FOUR_EYES);
             rl.setaType("A");
             rl.setbType("B");
-            rl.setcType("C");
-
-            // Trace erstellen
-            LogTrace trace = new LogTrace();         
-            LogEntry log0 = new LogEntry(0, ActivityStatus.COMPLETE, "B", "person1", null, 1440140438317L); 
-            trace.add(log0);
-            LogEntry log1 = new LogEntry(0, ActivityStatus.COMPLETE, "C", null, null, 1440140438322L);
-            trace.add(log1);
-            LogEntry log2 = new LogEntry(0, ActivityStatus.COMPLETE, "D", null, null, 1440140438327L);
-            trace.add(log2);
-            LogEntry log3 = new LogEntry(0, ActivityStatus.COMPLETE, "A", "person1", null, 1440140438332L);
-            trace.add(log3);
+            rl.setcType("C");            
+            
+            // Trace parsen und in einen String packen
+            String traceOut = "";
+            List<LogTrace<LogEntry>> log = LogParser.parse(new File("../Logs/4_eyes_principle_correct_BABA.mxml")).get(0);
+            for(LogTrace<LogEntry> trace : log) {                
+                for(LogEntry entry : trace.getEntries()) {
+                    String actString = "hap(activity(0, " + entry.getEventType().name() + ",'";
+                    actString += entry.getActivity() + "','" + entry.getOriginator() + "','";
+                    actString += entry.getRole() + "')," + entry.getTimestamp().getTime() + ").\n";
+                    traceOut +=  actString;
+                    System.out.print(actString);
+                }
+            }
             
             // Traces und Regel zusammensetzen            
             String query = new String();
-            query += trace.toPrologTrace();
+            query += traceOut;
             query += "\n";
             query += "\n";
             query += rl.asString();
@@ -59,6 +68,10 @@ public class SWATIIPlugin {
         } catch (PrerequisitesException ex) {
             System.out.println("Nicht alle Variablen gesetzt!");
             System.out.println("Nötig ist " + ex.getPrerequisites());
+        } catch (IOException ex) {
+            System.out.println("Datei nicht gefunden");
+        } catch (ParserException ex) {
+            System.out.println("Parser putt");
         }
     }
 }
