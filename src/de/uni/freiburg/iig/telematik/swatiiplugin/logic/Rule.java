@@ -104,10 +104,10 @@ public class Rule {
                     throw new PrerequisitesException("AType und BType");
                 }
                 out += "  AType='" + getaType() + "',\n";
-                out += "  hap(activity(complete,AType,AOriginator,ARole),ATime),\n";
+                out += "  hap(activity(AInstance, complete,AType,AOriginator,ARole),ATime),\n";
                 out += "  not((\n";
                 out += "      BType='" + getbType() + "',\n";
-                out += "      hap(activity(complete,BType,BOriginator,BRole),BTime),\n";
+                out += "      hap(activity(BInstance, complete,BType,BOriginator,BRole),BTime),\n";
                 out += "      BTime>ATime\n";
                 out += "  ))\n";
                 break;
@@ -117,12 +117,12 @@ public class Rule {
                     throw new PrerequisitesException("AType und BType");
                 }
                 out += "  AType='" + getaType() + "',\n";
-                out += "  hap(activity(complete,AType,AOriginator,ARole),ATime),\n";
+                out += "  hap(activity(AInstance, complete,AType,AOriginator,ARole),ATime),\n";
                 out += "  not((\n";
                 out += "      BType='" + getbType() + "',\n";
                 out += "      BOriginator=AOriginator,\n";
                 out += "      not((\n";
-                out += "        hap(activity(complete,BType,BOriginator,BRole),BTime)\n";
+                out += "        hap(activity(BInstance, complete,BType,BOriginator,BRole),BTime)\n";
                 out += "      ))\n";
                 out += "  ))\n";
                 break;
@@ -132,15 +132,15 @@ public class Rule {
                     throw new PrerequisitesException("AType, BType und CType");
                 }
                 out += "  AType='" + getaType() + "',\n";
-                out += "  hap(activity(complete,AType,AOriginator,ARole),ATime),\n";
+                out += "  hap(activity(AInstance, complete,AType,AOriginator,ARole),ATime),\n";
                 out += "  not((\n";
                 out += "      BType='" + getbType() + "',\n";
-                out += "      hap(activity(complete,BType,BOriginator,BRole),BTime),\n";
+                out += "      hap(activity(BInstance, complete,BType,BOriginator,BRole),BTime),\n";
                 out += "      BTime>ATime\n";
                 out += "  )),\n";
                 out += "  not((\n";
                 out += "      CType='" + getcType() + "',\n";
-                out += "      hap(activity(complete,CType,COriginator,CRole),CTime),\n";
+                out += "      hap(activity(CInstance, complete,CType,COriginator,CRole),CTime),\n";
                 out += "      CTime>ATime\n";
                 out += "  ))\n";
                 break;
@@ -150,7 +150,7 @@ public class Rule {
                     throw new PrerequisitesException("AType");
                 }
                 out += "  AType='" + getaType() + "',\n";
-                out += "  hap(activity(complete,AType,AOriginator,ARole),ATime)\n";
+                out += "  hap(activity(AInstance, complete,AType,AOriginator,ARole),ATime)\n";
                 break;
 
             case EXISTS_A:
@@ -159,7 +159,7 @@ public class Rule {
                 }
                 out += " not((\n";
                 out += "    AType='" + getaType() + "',\n";
-                out += "    hap(activity(complete,AType,AOriginator,ARole),ATime)\n";
+                out += "    hap(activity(AInstance, complete,AType,AOriginator,ARole),ATime)\n";
                 out += " ))\n";
         }
         out += ").";

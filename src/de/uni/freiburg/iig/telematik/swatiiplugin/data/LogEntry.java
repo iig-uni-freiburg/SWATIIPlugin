@@ -1,11 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.uni.freiburg.iig.telematik.swatiiplugin.data;
-
-import java.sql.Timestamp;
 
 /**
  *
@@ -13,6 +6,7 @@ import java.sql.Timestamp;
  */
 public class LogEntry {
     private final String activity;
+    private int instance;
     private ActivityStatus status;
     private String originator;
     private String role;
@@ -55,6 +49,20 @@ public class LogEntry {
     public long getTime() {
         return time;
     }
+    
+    /**
+     * @return the instance
+     */
+    public int getInstance() {
+        return instance;
+    }
+
+    /**
+     * @param instance the instance to set
+     */
+    public void setInstance(int instance) {
+        this.instance = instance;
+    }
 
     /**
      * @param status the status to set
@@ -95,7 +103,7 @@ public class LogEntry {
         this.activity = activity;
     }
     
-    public LogEntry(ActivityStatus status, String activity, String originator, String role, long time) {
+    public LogEntry(int instance, ActivityStatus status, String activity, String originator, String role, long time) {
         this.activity = activity;
         this.setStatus(status);
         this.setOriginator(originator);
@@ -110,11 +118,12 @@ public class LogEntry {
     @Override
     public String toString(){
         String out = "activity(";
+        out += getInstance() + ", ";
         out += getStatus().toString() + ",'";
         out += getActivity() + "','";
         out += getOriginator() + "','";
         out += getRole() + "'),";
         out += getTime();
         return out;
-    }
+    }    
 }

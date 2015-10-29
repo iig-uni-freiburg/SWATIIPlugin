@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 
 /*
@@ -31,13 +26,13 @@ public class SWATIIPlugin {
 
             // Trace erstellen
             LogTrace trace = new LogTrace();         
-            LogEntry log0 = new LogEntry(ActivityStatus.COMPLETE, "B", "s1", null, 1440140438317L); 
+            LogEntry log0 = new LogEntry(0, ActivityStatus.COMPLETE, "B", "person1", null, 1440140438317L); 
             trace.add(log0);
-            LogEntry log1 = new LogEntry(ActivityStatus.COMPLETE, "C", null, null, 1440140438322L);
+            LogEntry log1 = new LogEntry(0, ActivityStatus.COMPLETE, "C", null, null, 1440140438322L);
             trace.add(log1);
-            LogEntry log2 = new LogEntry(ActivityStatus.COMPLETE, "D", null, null, 1440140438327L);
+            LogEntry log2 = new LogEntry(0, ActivityStatus.COMPLETE, "D", null, null, 1440140438327L);
             trace.add(log2);
-            LogEntry log3 = new LogEntry(ActivityStatus.COMPLETE, "A", "s1", null, 1440140438332L);
+            LogEntry log3 = new LogEntry(0, ActivityStatus.COMPLETE, "A", "person1", null, 1440140438332L);
             trace.add(log3);
             
             // Traces und Regel zusammensetzen            
