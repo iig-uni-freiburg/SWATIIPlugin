@@ -3,16 +3,13 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 /*
  * Imports
  */
+import de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleContainer.*;
+import de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleObjects.*;
 import alice.tuprolog.*;
-import de.invation.code.toval.parser.ParserException;
-import de.uni.freiburg.iig.telematik.swatiiplugin.logic.*;
-import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
-import de.uni.freiburg.iig.telematik.sewol.log.LogTrace;
-import de.uni.freiburg.iig.telematik.sewol.log.LogEntry;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
+import de.invation.code.toval.parser.ParserException;
+import de.uni.freiburg.iig.telematik.sewol.log.*;
+import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
 
 /**
  *
@@ -26,14 +23,25 @@ public class SWATIIPlugin {
     public static void main(String[] args) {
         try {
             // Regel erstellen
-            Rule rl = new Rule(RuleType.FOUR_EYES);
+            /*Rule rl = new Rule(RuleType.FOUR_EYES);
             rl.setaType("A");
             rl.setbType("B");
-            rl.setcType("C");            
+            rl.setcType("C");*/
+            // FOUR EYES
+            RuleFalse rf = new RuleFalse();            
+            rf.add(new Type(AbstractRuleObject.Letter.A, AbstractRuleObject.Comparator.EQUAL, "A"));
+            rf.add(new Hap(AbstractRuleObject.Letter.A, EventType.complete));
+            Not n = new Not();
+            n.add(new Type(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, "B"));
+            n.add(new Originator(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, AbstractRuleObject.Letter.A));            
+            n.add(new Not().add(new Hap(AbstractRuleObject.Letter.B, EventType.complete)));
+            rf.add(n);
+            
+            System.out.println(rf.toString());
             
             // Trace parsen und in einen String packen
             String traceOut = "";
-            List<LogTrace<LogEntry>> log = LogParser.parse(new File("../Logs/4_eyes_principle_correct_BABA.mxml")).get(0);
+            java.util.List<LogTrace<LogEntry>> log = LogParser.parse(new java.io.File("../Logs/4_eyes_principle_correct_BABA.mxml")).get(0);
             for(LogTrace<LogEntry> trace : log) {                
                 for(LogEntry entry : trace.getEntries()) {
                     String actString = "hap(activity(0, " + entry.getEventType().name() + ",'";
@@ -49,7 +57,7 @@ public class SWATIIPlugin {
             query += traceOut;
             query += "\n";
             query += "\n";
-            query += rl.asString();
+            query += rf.toString();
 
             // Prolog starten
             Prolog engine = new Prolog();
@@ -57,18 +65,15 @@ public class SWATIIPlugin {
             engine.setTheory(theory);
             SolveInfo info = engine.solve("rule_false.");
 
-            // Ergebnis            
-            System.out.print(rl.getRuleType());
-            System.out.println(" gets Result: " + !info.isSuccess());
+            // Ergebnis           
+            
+            System.out.println("Result: " + !info.isSuccess());
 
         } catch (MalformedGoalException ex) {
             System.out.println("Ziel falsch gesetzt");
         } catch (InvalidTheoryException ex) {
             System.out.println("Theorie nicht gültig");
-        } catch (PrerequisitesException ex) {
-            System.out.println("Nicht alle Variablen gesetzt!");
-            System.out.println("Nötig ist " + ex.getPrerequisites());
-        } catch (IOException ex) {
+        } catch (java.io.IOException ex) {
             System.out.println("Datei nicht gefunden");
         } catch (ParserException ex) {
             System.out.println("Parser putt");

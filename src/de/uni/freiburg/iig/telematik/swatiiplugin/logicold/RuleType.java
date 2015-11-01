@@ -1,4 +1,4 @@
-package de.uni.freiburg.iig.telematik.swatiiplugin.logic;
+package de.uni.freiburg.iig.telematik.swatiiplugin.logicold;
 
 /**
  *
