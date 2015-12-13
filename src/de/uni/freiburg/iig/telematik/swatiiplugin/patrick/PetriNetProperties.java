@@ -7,8 +7,6 @@ import de.uni.freiburg.iig.telematik.sepia.exception.PNValidationException;
 import de.uni.freiburg.iig.telematik.sepia.graphic.AbstractGraphicalPN;
 import de.uni.freiburg.iig.telematik.sepia.petrinet.properties.PropertyCheckingResult;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
-import de.uni.freiburg.iig.telematik.swat.patterns.logic.patterns.BoundedWith;
-import de.uni.freiburg.iig.telematik.swat.patterns.logic.patterns.USegregatedFrom;
 
 public class PetriNetProperties {
 	public PropertyCheckingResult net_status = PropertyCheckingResult.UNKNOWN;
@@ -16,8 +14,10 @@ public class PetriNetProperties {
 	public PropertyCheckingResult bod_status = PropertyCheckingResult.UNKNOWN;
 	public PropertyCheckingResult sod_status = PropertyCheckingResult.UNKNOWN;
 
-	public PetriNetProperties(AbstractGraphicalPN net, RBACModel acmodel,
-			Vector<bodSod> BoDs, Vector<bodSod> SoDs) {
+	// PN properties are checked, when the class is initialized.
+	// (net available? RBAC model available? BoDs and SoDs available?)
+	
+	public PetriNetProperties(AbstractGraphicalPN net, RBACModel acmodel, Vector<BoDSoD> BoDs, Vector<BoDSoD> SoDs) {
 
 		try {
 			net_status = validateNet(net);
@@ -38,8 +38,7 @@ public class PetriNetProperties {
 
 	}
 
-	public PropertyCheckingResult validateNet(AbstractGraphicalPN net)
-			throws PNValidationException {
+	public PropertyCheckingResult validateNet(AbstractGraphicalPN net) throws PNValidationException {
 		PropertyCheckingResult result = PropertyCheckingResult.UNKNOWN;
 		if (net == null)
 			throw new PNValidationException("Petri Net is necessary.");
@@ -48,8 +47,7 @@ public class PetriNetProperties {
 		return result;
 	}
 
-	public PropertyCheckingResult validateRbac(RBACModel acmodel)
-			throws PNValidationException {
+	public PropertyCheckingResult validateRbac(RBACModel acmodel) throws PNValidationException {
 		PropertyCheckingResult result = PropertyCheckingResult.UNKNOWN;
 		if (acmodel == null)
 			throw new PNValidationException("Access Control Model is necessary.");
@@ -59,7 +57,7 @@ public class PetriNetProperties {
 
 	}
 
-	public PropertyCheckingResult validateBod(Vector<bodSod> BoDs) {
+	public PropertyCheckingResult validateBod(Vector<BoDSoD> BoDs) {
 		PropertyCheckingResult result = PropertyCheckingResult.UNKNOWN;
 		if (BoDs == null)
 			result = PropertyCheckingResult.FALSE;
@@ -70,7 +68,7 @@ public class PetriNetProperties {
 		return result;
 	}
 
-	public PropertyCheckingResult validateSod(Vector<bodSod> SoDs) {
+	public PropertyCheckingResult validateSod(Vector<BoDSoD> SoDs) {
 		PropertyCheckingResult result = PropertyCheckingResult.UNKNOWN;
 		if (SoDs == null)
 			result = PropertyCheckingResult.FALSE;

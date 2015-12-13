@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="/TOVAL"/>
+	<classpathentry kind="src" path="/SEPIA"/>
+	<classpathentry kind="src" path="/SEWOL"/>
+	<classpathentry kind="src" path="/SWAT20"/>
+	<classpathentry kind="lib" path="res/guava-18.0.jar"/>
+	<classpathentry kind="lib" path="/SAT4J/dist/CUSTOM/org.sat4j.core.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>
