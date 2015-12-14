@@ -66,6 +66,7 @@ public class ResilienceChecker {
 						System.out.println("WSP");
 						WSP = true;
 					}
+					/*
 					if (WSP == false) {
 						for (int j = 0; j < sequences.get(i).size(); j++) {
 							Transition currentTransition = sequences.get(i).get(j);
@@ -83,6 +84,7 @@ public class ResilienceChecker {
 							}
 						}
 					}
+					*/
 				}
 				else {
 					System.out.println(SoDIsAlsoBoD);
@@ -289,11 +291,6 @@ public class ResilienceChecker {
 				authorizedUsers.clear();
 			}	
 		}
-		
-		
-		for (int i = 0; i < summed_up_BoDs.size(); i++) {
-			System.out.println(summed_up_BoDs.get(i));
-		}
 	}
 
 	/*
@@ -436,6 +433,9 @@ public class ResilienceChecker {
 	}
 	
 	
+	/*
+	 * Creates the Dimacs File for the SAT4J solver
+	 */
 	static void createSAT4JFile(int amount_variables, int j) throws IOException {
 		FileWriter fw = new FileWriter("src/de/uni/freiburg/iig/telematik/swatiiplugin/patrick/ressources/DimacsFile.cnf");
 		BufferedWriter bw = new BufferedWriter(fw);
@@ -451,6 +451,11 @@ public class ResilienceChecker {
 		bw.close();
 	}
 	
+	/*
+	 * Sets a Minus before each variable in a constraint
+	 * E.g: constraint = 2 5
+	 *      new_constraint = -2 -5
+	 */
 	static String convertNAND(String constraint) throws IOException {
 		constraint = constraint.replace(" ", " -");
 		constraint = "-" + constraint;
@@ -458,16 +463,28 @@ public class ResilienceChecker {
 	}
 	
 	
+	/*
+	 * The variable DimacsTransitions contains a Number for each user of a transition and the user isself
+	 * E.g.: currentTransition = t1 [Alice, Bob, Claire]
+	 * 		 DimacsTransitions[0] = 1 Alice
+	 * 		 DimacsTransitions[1] = 2 Bob
+	 * 		 DimacsTransitions[2] = 3 Claire
+	 * 
+	 * 		 currentTransition = t2 [Claire]
+	 *       DimacsTransitions[3] = 4 Claire
+	 *       
+	 * This is passed to convertXOR()
+	 * Subsequently the transitions are checked, if they are in a SoD constraint.
+	 * The number of the users which belong to both SoD transitions are passed to convertNAND()
+	 * E.g.: SoD t1 [Alice(1), Bob(2)] <--> t2 [Alice(3), Bob(4), Claire(5)]
+	 * convertNAND(1, 3)
+	 * convertNAND(2, 4) 
+	 */
 	static void convertToDimacs(Vector<Transition> onesequence, Vector<BoDSoD> SoDConstraints_for_sequence) throws IOException, CloneNotSupportedException {
-		Map<Integer, String> User_key = new HashMap<Integer, String>();	
 		Integer count = 0;
-
-		// Examine every User - Vertex pair in order to find out how many users
-		// are connected with each vertex (i.e. v1-3, v2-1, v3-4, ...)
 		for (int i = 0; i < onesequence.size(); i++) {
 			Transition currentTransition = onesequence.get(i);
 			for (int j = 0; j < currentTransition.getAuthorizedUsers().size(); j++) {
-				User_key.put(count, currentTransition.getAuthorizedUsers().get(j));
 				count++;
 				currentTransition.setWSPuser(currentTransition.getAuthorizedUsers().get(j));
 				currentTransition.setWSPNumber(count);
@@ -475,11 +492,9 @@ public class ResilienceChecker {
 			}
 			convertXOR(count, currentTransition.getAuthorizedUsers().size());
 		}
-		
-		
+			
 		for (int i = 0; i < DimacsTransitions.size(); i++) {
 			for (int z = 0; z < DimacsTransitions.size(); z++) {
-				// i.user = z.user and i.vertex != z.vertex
 				if (DimacsTransitions.elementAt(i).getWSPuser().contentEquals(DimacsTransitions.elementAt(z).getWSPuser()) && DimacsTransitions.elementAt(i).getTransition().getName().compareTo(DimacsTransitions.elementAt(z).getTransition().getName()) < 0) {
 					for (int j = 0; j < SoDConstraints_for_sequence.size(); j++) {
 						if (SoDConstraints_for_sequence.get(j).getT1().getTransition().getName().toString().contentEquals(DimacsTransitions.elementAt(i).getTransition().getName())&& SoDConstraints_for_sequence.get(j).getT2().getTransition().getName().contentEquals(DimacsTransitions.elementAt(z).getTransition().getName())) {
@@ -498,31 +513,34 @@ public class ResilienceChecker {
 	
 	static void convertXOR(int overall, int part)throws IOException {
 		/*
-		 * It's important to distinguish between the number of variables when
-		 * they are converted to constraints in the CNF Dimacs File Line in File
-		 * for part = 1: 3 0
+		 * It's important to distinguish between the number of variables (saved in variable part) when
+		 * they are converted to constraints in the CNF Dimacs File. The line has to be converted different
+		 * 
+		 * Line in File for part = 1: 3 0
+		 * Meaning: 3 has to be true
 		 * 
 		 * Line in File for part = 2: 8 9 0 
 		 *                           -8 -9 0
+		 * Meaning: 8 or 9 has to be true and 8 or 9 has to be false
 		 * 
 		 * Line in File for part > 2: -18 -19 -20 -21 0
 		 *                             18 -19 -20 -21 0
 		 *                            -18 19 -20 -21 0
 		 *                            -18 -19 20 -21 0
 		 *                            -18 -19 -20 21 0
+		 * Meaning: One of the variables 18, 19, 20 or 21 has to be true and the rest has to be false
 		 */
 
 		String constraint = "";
 		String line = "";
 
-		// check how many variables are needed and name them from 1 .. i (i.e.
-		// overall = 7, part = 3 --> constraint = "5 6 7"
+		// check how many variables are needed and name them from 1 .. i
+		// E.g.: overall = 7, part = 3 --> constraint = "5 6 7"
 		for (int i = overall - (part - 1); i <= overall; i++) {
 			constraint = constraint + i + " ";
 		}
 
-		// delete last space from String constraint and add a zero to complete
-		// it
+		// delete last space from String constraint and add a zero to complete it
 		constraint = constraint.substring(0, constraint.length() - 1);
 		if (part > 1) {
 			constraint = constraint + " 0";
@@ -537,15 +555,13 @@ public class ResilienceChecker {
 		constraint = constraint + " 0";
 
 		// If there is only one variable (part) in the constraint to convert,
-		// this needs to be skipped as a negation of one variable at one vertex
-		// is not allowed
+		// this needs to be skipped as a negation of one variable is not allowed
 		if (part > 1) {
 			constraints.add(constraint);
 			amount_constraints++;
 		}
 
-		// search for all "-" in constraint and remove it separately from the
-		// string
+		// search for all "-" in constraint and remove it separately
 		if (part != 2) {
 			for (int i = -1; (i = constraint.indexOf("-", i + 1)) != -1;) {
 				line = constraint.substring(0, i) + constraint.substring(i + 1, constraint.length());
