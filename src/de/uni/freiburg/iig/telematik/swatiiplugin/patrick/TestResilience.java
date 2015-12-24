@@ -15,36 +15,66 @@ import de.invation.code.toval.parser.ParserException;
 import de.uni.freiburg.iig.telematik.sepia.exception.PNValidationException;
 import de.uni.freiburg.iig.telematik.sepia.graphic.AbstractGraphicalPN;
 import de.uni.freiburg.iig.telematik.sepia.parser.PNParsing;
+import de.uni.freiburg.iig.telematik.sepia.petrinet.properties.PropertyCheckingResult;
 import de.uni.freiburg.iig.telematik.sepia.util.PNUtils;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.lattice.RoleLattice;
 
+/**
+ * Test class for creating and parsing a Petri net with a RBAC Model with the goal to organize the input for the class {@link ResilienceChecker}.<br>
+ * Optionally, Separation of Duty (SoD) and / or Binding of Duty (BoD) constraints can be defined.<br>
+ * ResilienceChecker returns an instance of the class {@link ResilienceProperties}.<br>
+ * The return value is going to be checked and printed in form of a report.
+ * 
+ * @author Patrick Notz
+ *
+ */
+
 public class TestResilience {
 	
 	private static Set transitions = null;
+	private static ResilienceProperties result = new ResilienceProperties();
 	
+	
+	/**
+	 * Calls up different functions to call {@link ResilienceChecker} and output the results.
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
-
 		Vector<BoDSoD> BoDs = new Vector<BoDSoD>();
 		Vector<BoDSoD> SoDs = new Vector<BoDSoD>();
+		
+		/*
+		 *  Create SoDs
+ 		 *  Activate fifth SoD constraint to test that first SoD constraint is also the second SoD constraint
+ 		 *  Activate sixth SoD constraint to test that the whole workflow is not satisfiable
+ 		 *  Activate seventh SoD constraint to test that the third sequence is not satisfiable
+		 */
+		SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Arrange_meeting_with_new_candidate1", null)));
+		SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Hire_candidate", null)));
+		SoDs.add(new BoDSoD(new WSPTransition("Arrange_meeting_with_new_candidate1", null), new WSPTransition("Hire_candidate", null)));
+		SoDs.add(new BoDSoD(new WSPTransition("Post_job_internally", null), new WSPTransition("Examine_existing_resumes_on_file", null)));
+		// SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Develop_interview_questions", null)));
+		// SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Make_employment_offer", null)));
+		// SoDs.add(new BoDSoD(new WSPTransition("Determine_pay_range", null), new WSPTransition("Arrange_meeting_with_new_candidate1", null)));
 
-		
-		// Create SoDs
-		SoDs.add(new BoDSoD(new Transition("Develop_interview_questions", null), new Transition("Arrange_meeting_with_new_candidate1", null)));
-		
-		// Create BoDs
-		BoDs.add(new BoDSoD(new Transition("Develop_interview_questions", null), new Transition("Conduct_interview", null)));
-		BoDs.add(new BoDSoD(new Transition("Develop_interview_questions", null), new Transition("Select_candidate", null)));
-	 	BoDs.add(new BoDSoD(new Transition("Determine_pay_range", null), new Transition("Make_employment_offer", null)));	
-		
+		/* 
+		 * Create BoDs
+		 * Activate third BoD constraint to test that there is no common set of users for the summed up BoD constraints
+		 */
+		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Conduct_interview", null)));
+		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Select_candidate", null)));
+		//BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
+
 		// Parse Petri Net in order to access transitions and paths
 		String net_path = "src/de/uni/freiburg/iig/telematik/swatiiplugin/patrick/ressources/Einstellungsprozess1.pnml";
 		AbstractGraphicalPN net = parse_petri_net(net_path);
 		
 		// Create RBAC Model
-		RBACModel acmodel = createRbacModel(net);
+		RBACModel acmodel = createRbacModel();
 		
-		// Define User which should not available
+		// Define set of users which should be removed from the workflow
 		HashSet<String> userset = new HashSet<String>();
 		userset.add("Alice");
 		userset.add("Bob");
@@ -52,15 +82,39 @@ public class TestResilience {
 		Vector<String> userDeletionCombi = createDeletionCombi(userset);
 		
 		// Check for resilience
-		ResilienceChecker.checkForResilience(net, acmodel, BoDs, SoDs, userDeletionCombi);	
+		result = ResilienceChecker.checkForResilience(net, acmodel, BoDs, SoDs, userDeletionCombi);
+		
+		// Print results of ResilienceChecker
+		outputReport();
 	}
 	
 	
+	/**
+	 * Print results of ResilienceChecker stored in the variable "result"
+	 */
+	private static void outputReport() {
+		if (result.exception.isEmpty()) {
+			if (result.isSatifiable == PropertyCheckingResult.TRUE)
+				// Output of resilience information
+				result.printReport();
+			else
+				// WSP found for whole workflow (all sequences)
+				System.out.println("The whole Workflow is not satisfiable");
+		}
+		else {
+			// Output of all exceptions
+			for (int i=0; i<result.exception.size(); i++) {
+				System.out.println(result.exception.get(i));
+			}
+		}
+	}
+
 	
-	/*
-	 * Creates, sorts and returns the cartesian product of a set of users.
-	 * E.g.: Input = Claire, Bob, Alice
-	 *       Output = [[[Claire], [Bob], [Bob, Claire], [Alice], [Alice, Claire], [Alice, Bob], [Alice, Bob, Claire]]
+	/**
+	 * Creates, sorts and returns the cartesian product of a set of user.
+	 *       
+	 * @param userset Set of user which should be taken from the workflow, e.g. [Claire, Bob, Alice]
+	 * @return Cartesian product of userset, e.g. [Claire], [Bob], [Bob, Claire], [Alice], [Alice, Claire], [Alice, Bob], [Alice, Bob, Claire]
 	 */
 	private static Vector<String> createDeletionCombi(HashSet<String> userset) {	
 		Vector<String> userDeletionCombi = new Vector<String>();
@@ -75,20 +129,34 @@ public class TestResilience {
 		return userDeletionCombi;
 	}
 
-
-
+	
+	/**
+	 * Function to parse a Petri Net.
+	 * 
+	 * @param path Path to Petri Net.
+	 * @return Instance of {@link AbstractGraphicalPN} parsed from the path
+	 * @throws IOException
+	 * @throws ParserException
+	 * @throws PNValidationException
+	 */
 	static AbstractGraphicalPN parse_petri_net(String path) throws IOException, ParserException, PNValidationException {
 		// Parsing Petri Net
 		try {
 			AbstractGraphicalPN net = PNParsing.parse(new File(path));
+			// Store transitions of the Petri Net
 			transitions = PNUtils.getNameSetFromTransitions(net.getPetriNet().getTransitions(), false);
 			return net;
 		} catch (Exception e) {
 			return null;
 		}
 	}
-		
-	static RBACModel createRbacModel(AbstractGraphicalPN net) {
+	
+	
+	/**
+	 * Creates a RBAC model which needs to be compatible to the transitions of the Petri net which is parsed. 
+	 * @return Instance of the class {@link RBACModel} which represents an access control model
+	 */
+	static RBACModel createRbacModel() {
 		RBACModel acmodel = null;
 		try {
 			// Creating User
@@ -102,7 +170,6 @@ public class TestResilience {
 			// Creating RBAC-Model. Each role is a unique combination of
 			// subjects which are allowed to execute transitions
 			SOABaseProperties propertiesContext = new SOABaseProperties();
-
 			propertiesContext.setSubjects(subjects);
 			propertiesContext.setActivities(transitions);
 			propertiesContext.setName("propertyname");
@@ -114,6 +181,7 @@ public class TestResilience {
 			roleLattice.addRole("a");
 			roleLattice.addRole("ab");
 			roleLattice.addRole("abc");
+			roleLattice.addRole("b");
 			roleLattice.addRole("bc");
 			roleLattice.addRole("de");
 
@@ -121,6 +189,7 @@ public class TestResilience {
 			HashSet<String> transitions_for_a = new HashSet<String>();
 			HashSet<String> transitions_for_ab = new HashSet<String>();
 			HashSet<String> transitions_for_abc = new HashSet<String>();
+			HashSet<String> transitions_for_b = new HashSet<String>();
 			HashSet<String> transitions_for_bc = new HashSet<String>();
 			HashSet<String> transitions_for_de = new HashSet<String>();			
 			
@@ -131,14 +200,18 @@ public class TestResilience {
 			acmodel.setActivityPermission("abc", transitions_for_abc);
 			
 			acmodel.addRoleMembership("Alice", "a");
-			transitions_for_a.add("Determine_pay_range");
-			transitions_for_a.add("Make_employment_offer");		
+			transitions_for_a.add("Determine_pay_range");	
 			acmodel.setActivityPermission("a", transitions_for_a);
 
 			acmodel.addRoleMembership("Alice", "ab");
 			acmodel.addRoleMembership("Bob", "ab");
 			transitions_for_ab.add("Arrange_meeting_with_new_candidate1");
+			transitions_for_ab.add("Conduct_interview");
 			acmodel.setActivityPermission("ab", transitions_for_ab);
+			
+			acmodel.addRoleMembership("Bob", "b");
+			transitions_for_b.add("Make_employment_offer");		
+			acmodel.setActivityPermission("b", transitions_for_b);
 			
 			acmodel.addRoleMembership("Bob", "bc");
 			acmodel.addRoleMembership("Claire", "bc");
@@ -146,7 +219,6 @@ public class TestResilience {
 			transitions_for_bc.add("Develop_recruitment_strategy");
 			transitions_for_bc.add("Arrange_meeting_with_new_candidate0");
 			transitions_for_bc.add("Arrange_meeting_with_new_candidate2");		
-			transitions_for_bc.add("Conduct_interview");
 			transitions_for_bc.add("Select_candidate");
 			acmodel.setActivityPermission("bc", transitions_for_bc);
 			

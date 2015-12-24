@@ -4,29 +4,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+/**
+ * This class stores every single information about the resilience of a Petri net gathered from {@link ResilienceChecker}.
+ * 
+ * @author Patrick Notz
+ *
+ */
 public class Report{
-	private Vector<Transition> sequence = new Vector<Transition>();
-	private Transition transition = null;
+	private Vector<WSPTransition> sequence = new Vector<WSPTransition>();
+	private WSPTransition transition = null;
+	private String WSPInfo = "";
 	private List<String> relevantUsers = new ArrayList<String>();	
 	private Vector<String> TestedUsers = new Vector<String>();
-	private String boDSoDInfo = new String();
+	private String boDInfo = new String();
+	private String soDInfo = new String();
 
-	// A report needs only to be saved, if the transition and the user which are taken from the process are not in the report already.
-	// Therefore the hashCode of the transition and the users needs to be compared.
+	/**
+	 *  A report needs only to be saved, if a transition with additional information is not in the report already.<br>
+	 *  Therefore the hashCode of relevant components needs to be compared.
+	 */
     public int hashCode() {
-        return getSequence().hashCode() + getTransition().hashCode() + getRelevantUsers().hashCode();
+        return getSequence().hashCode() + getTransition().hashCode() + getRelevantUsers().hashCode() + getBoDInfo().hashCode() + getSoDInfo().hashCode();
     }
 	
-	public Vector<Transition> getSequence() {
+	public Vector<WSPTransition> getSequence() {
 		return sequence;
 	}
-	public void setSequence(Vector<Transition> sequence) {
+	public void setSequence(Vector<WSPTransition> sequence) {
 		this.sequence = sequence;
 	}
-	public Transition getTransition() {
+	public WSPTransition getTransition() {
 		return transition;
 	}
-	public void setTransition(Transition transition) {
+	public void setTransition(WSPTransition transition) {
 		this.transition = transition;
 	}
 	public List<String> getRelevantUsers() {
@@ -44,21 +54,41 @@ public class Report{
 		TestedUsers = testedUsers;
 	}
 
-	public String getBoDSoDInfo() {
-		return boDSoDInfo;
+	public String getBoDInfo() {
+		return boDInfo;
 	}
 
-	public void setBoDSoDInfo(String boDSoDInfo) {
-		this.boDSoDInfo = boDSoDInfo;
+	public void setBoDInfo(String boDInfo) {
+		this.boDInfo = boDInfo;
 	}
 	
-	// Function to convert Vector<Transition> to String in order to obtain a sequence
-	public String sequenceToString(Vector<Transition> sequence) {
+	public String getSoDInfo() {
+		return soDInfo;
+	}
+
+	public void setSoDInfo(String soDInfo) {
+		this.soDInfo = soDInfo;
+	}
+	
+	/**
+	 * Function to convert and format a vector containing transitions to String.
+	 * @param sequence Stores a sequence of a workflow containing transitions.
+	 * @return Formated sequence
+	 */
+	public String sequenceToString(Vector<WSPTransition> sequence) {
 		String sequenceString = "";
 		for (int i = 0; i < sequence.size(); i++) {
-			sequenceString = sequenceString + sequence.get(i).getTransition().getName() + ", ";
+			sequenceString = sequenceString + sequence.get(i).getName() + ", ";
 		}
 		sequenceString = sequenceString.substring(0, sequenceString.length()-2);
 		return sequenceString;	
+	}
+
+	public String getWSPInfo() {
+		return WSPInfo;
+	}
+
+	public void setWSPInfo(String wSPInfo) {
+		WSPInfo = wSPInfo;
 	}
 }
