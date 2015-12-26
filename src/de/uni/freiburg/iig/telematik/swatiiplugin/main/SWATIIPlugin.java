@@ -28,13 +28,16 @@ public class SWATIIPlugin {
             rl.setbType("B");
             rl.setcType("C");*/
             // FOUR EYES
-            RuleFalse rf = new RuleFalse();            
+            RuleFalse rf = new RuleFalse();
+            rf.add(new CustomRule("verwandt(AOriginator,BOriginator)"));
             rf.add(new Type(AbstractRuleObject.Letter.A, AbstractRuleObject.Comparator.EQUAL, "A"));
             rf.add(new Hap(AbstractRuleObject.Letter.A, EventType.complete));
             Not n = new Not();
             n.add(new Type(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, "B"));
-            n.add(new Originator(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, AbstractRuleObject.Letter.A));            
-            n.add(new Not().add(new Hap(AbstractRuleObject.Letter.B, EventType.complete)));
+            n.add(new Originator(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, AbstractRuleObject.Letter.A));
+            Not n2 = new Not();
+            n2.add(new Hap(AbstractRuleObject.Letter.B, EventType.complete));
+            n.add(n2);
             rf.add(n);
             
             System.out.println(rf.toString());
@@ -51,6 +54,7 @@ public class SWATIIPlugin {
                     System.out.print(actString);
                 }
             }
+            traceOut += "verwandt('A','B').";
             
             // Traces und Regel zusammensetzen            
             String query = new String();
