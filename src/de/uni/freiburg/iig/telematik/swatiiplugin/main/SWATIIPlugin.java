@@ -41,7 +41,7 @@ public class SWATIIPlugin {
             
             // Trace parsen und in einen String packen
             String traceOut = "";
-            java.util.List<LogTrace<LogEntry>> log = LogParser.parse(new java.io.File("../Logs/4_eyes_principle_correct_BABA.mxml")).get(0);
+            java.util.List<LogTrace<LogEntry>> log = LogParser.parse(new java.io.File("logs/4_eyes_principle_correct_BABA.mxml")).get(0);
             for(LogTrace<LogEntry> trace : log) {                
                 for(LogEntry entry : trace.getEntries()) {
                     String actString = "hap(activity(0, " + entry.getEventType().name() + ",'";
