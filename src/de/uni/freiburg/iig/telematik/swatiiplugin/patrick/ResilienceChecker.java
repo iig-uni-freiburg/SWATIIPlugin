@@ -118,7 +118,7 @@ public class ResilienceChecker {
 									if (validate.sod_status == PropertyCheckingResult.TRUE && !summed_up_SoDs.get(i).isEmpty()) 
 										checkSoDs(sequences.get(i), currentTransition, summed_up_SoDs.get(i));
 									for (int z = 0; z < userDeletionCombi.size(); z++) {
-										if (!compareDeletionWithAuthorization(currentTransition, userDeletionCombi.get(z)))
+										if (compareDeletionWithAuthorization(currentTransition, userDeletionCombi.get(z)))
 											createReport(sequences.get(i), currentTransition, userDeletionCombi);
 									}
 								}
