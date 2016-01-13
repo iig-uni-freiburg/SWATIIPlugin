@@ -2,6 +2,8 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.relations;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -76,43 +78,6 @@ public class Relations {
      */
     public void addGroup(Relation rel) {
         same_group.add(rel);
-    }
-    
-    /**
-     * Adds the new relations in "related" given by transitivity
-     */
-    public void elaborateTransitivity(){
-        for(Relation rel1 : related) {            
-            for(Relation rel2 : related) {
-                Relation relNew = transitive(rel1, rel2);
-                if(null != relNew) {                    
-                    related.add(relNew);
-                }
-            }         
-        }
-    }
-    
-    /**
-     * Returns the relation created by transitivity, and null if there is none
-     * Cannot handle two equal relations
-     * @param rel1
-     * @param rel2
-     * @return Relation or null
-     */
-    public Relation transitive(Relation rel1, Relation rel2) throws ReflexivityException {
-        if(rel1.getUser1().equals(rel2.getUser1())) {
-            return new Relation(rel1.getUser2(), rel2.getUser2());
-        }
-        if(rel1.getUser1().equals(rel2.getUser2())) {
-            return new Relation(rel1.getUser2(), rel2.getUser1());
-        }        
-        if(rel1.getUser2().equals(rel2.getUser1())) {
-            return new Relation(rel1.getUser1(), rel2.getUser2());
-        }
-        if(rel1.getUser2().equals(rel2.getUser2())) {
-            return new Relation(rel1.getUser1(), rel2.getUser1());
-        }
-        return null;
     }
     
     @Override

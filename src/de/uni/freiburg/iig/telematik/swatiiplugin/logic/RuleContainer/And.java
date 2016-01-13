@@ -8,7 +8,7 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleContainer;
  *
  * @author mosers
  */
-public class Brace extends java.util.ArrayList{
+public class And extends java.util.ArrayList{
     @Override
     public String toString(){
         String out = "(\n";
