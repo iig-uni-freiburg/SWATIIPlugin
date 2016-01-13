@@ -36,6 +36,6 @@ public class Rule {
      */
     @Override
     public String toString(){
-        return name + ":-(\n" + content.toString() + "\n).";
+        return name + ":-" + content.toString() + ".\n";
     }
 }

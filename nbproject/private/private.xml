@@ -5,10 +5,13 @@
         <group>
             <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/logic/RuleObjects/AbstractRuleObject.java</file>
             <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/main/Solver.java</file>
+            <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/relations/Relation.java</file>
             <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/relations/Relations.java</file>
             <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/logic/RuleObjects/CustomRule.java</file>
             <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/relations/EgoRelationException.java</file>
+            <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/logic/RuleObjects/SameGroup.java</file>
             <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/main/SWATIIPlugin.java</file>
+            <file>file:/home/mosers/NetbeansProjects/SWATIIPlugin/src/de/uni/freiburg/iig/telematik/swatiiplugin/logic/RuleObjects/PartnerOf.java</file>
         </group>
     </open-files>
 </project-private>

@@ -33,6 +33,6 @@ public class Relation {
     }
     
     public String toString() {
-        return "(" + getUser1() + "," + getUser2() + ")";
+        return "('" + getUser1() + "','" + getUser2() + "')";
     }
 }

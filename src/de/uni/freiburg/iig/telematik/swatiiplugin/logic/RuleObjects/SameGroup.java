@@ -4,25 +4,25 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleObjects;
  *
  * @author mosers
  */
-public class Partner extends AbstractRuleObject{
+public class SameGroup extends AbstractRuleObject{
     private String compareToString;
     
     /**
-     * Constructs a partner using two letters
+     * Constructs a "groupie" using two letters
      * @param typeCase
      * @param compareTo 
      */
-    public Partner(Letter typeCase, Letter compareTo) {
+    public SameGroup(Letter typeCase, Letter compareTo) {
         super(typeCase);
         super.compareTo = compareTo;
     }
     
     /**
-     * Constructs a partner using a letter and a string
+     * Constructs a "groupie" using a letter and a string
      * @param typeCase
      * @param compareTo 
      */
-    public Partner(Letter typeCase, String compareTo) {
+    public SameGroup(Letter typeCase, String compareTo) {
         super(typeCase);
         this.compareToString = compareTo;
     }
@@ -31,9 +31,9 @@ public class Partner extends AbstractRuleObject{
     @Override
     public String toString() {
         if(compareTo == null) {
-            return "partner_of(" + typeCase + "Role,'" + compareToString + "')";
+            return "same_group(" + typeCase + "Role,'" + compareToString + "')";
         } else {
-            return "partner_of(" + typeCase + "Role," + compareTo + "Role)";
+            return "same_group(" + typeCase + "Role," + compareTo + "Role)";
         }
     }
     
