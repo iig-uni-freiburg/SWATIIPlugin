@@ -24,19 +24,26 @@ public class Solver {
         try {
             String out = "";
             out += logToString(LogParser.parse(new java.io.File(input[0])).get(0));
-            out += "\n\n" + RBACToString(rbac);
-            out += "permitted_to_s(S,A):-member_of(S,R),permitted_to_r(R,A).\n"
-                    + "no_permissions:-(\n"    //Basic RBAC-rules
-                    + "hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),"
-                    + "not(permitted_to_s(AOriginator,AType),"
-                    + "permitted_to_r(ARole,AType))"; 
+            out += "\n\n" + RBACToString(rbac) 
+                + "user(U,T):-belong(S,R),role(R,T).\n"     //Basic RBAC-rules
+                + "no_permissions:-(\n"    
+                + "hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
+                + "not(user(AOriginator,AType),\n"
+                + "role(ARole,AType)).\n"; 
             
-            out += "\n\n" + input[1];       // Relations 
-            out += "related(X,Y):-related(Y,X).\n" // Basic relation-rules
+            out += "\n\n" + input[1]                // Relations
+                + "related(X,Y):-related(Y,X).\n"   // Basic relation-rules
                 + "related(X,Z):-related(X,Y),related(Y,Z).\n"
                 + "partner_of(X,Y):-partner_of(Y,X).\n"
                 + "same_group(X,Y):-same_group(Y,X).\n";
-            out += "\n\n" + input[2];       // Custom Rules           
+            
+            out += "\n\n" + input[2]                // Other Rules
+                + "enforcement_breached:-(\n"       // Enforcement rules
+                + "hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
+                + "(cannot_do_u(AOriginator,AType);\n"
+                + "cannot_do_R(ARole,AType);\n"
+                + "(must_execute_u(BOriginator),not(AOriginator = BOriginator));"
+                + "(must_execute_R(BRole),not(ARole = BRole)))).";  
             
             System.out.println(out);
             
