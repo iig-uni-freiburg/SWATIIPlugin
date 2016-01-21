@@ -54,7 +54,7 @@ public class PetriNetProperties {
 	
 	/**
 	 * Examines if the given Petri net is not empty.<br>
-	 * No resilience checks are performed, if there is no net.
+	 * No robustness checks are performed, if there is no net.
 	 * @param net Stores a Petri net.
 	 * @return {@code true} if the net is not null, {@code false} otherwise.
 	 * @throws PNValidationException
@@ -71,7 +71,7 @@ public class PetriNetProperties {
 	
 	/**
 	 * Examines if the given RBAC model is not empty.<br>
-	 * No resilience checks are performed, if there is no access control model.
+	 * No robustness checks are performed, if there is no access control model.
 	 * @param acmodel Stores a RBAC model.
 	 * @return {@code true} if the RBAC model is not null, {@code false} otherwise.
 	 * @throws PNValidationException
@@ -89,7 +89,7 @@ public class PetriNetProperties {
 	
 	/**
 	 * Examines if the given BoD constraints are not empty.<br>
-	 * Resilience checks are performed, disregarding the return value of this function.
+	 * Robustness checks are performed, disregarding the return value of this function.
 	 * @param BoDs Stores BoD constraints
 	 * @return {@code true} if BoD constraints are not null, {@code false} otherwise.
 	 */
@@ -107,7 +107,7 @@ public class PetriNetProperties {
 	
 	/**
 	 * Examines if the given SoD constraints are not empty.<br>
-	 * Resilience checks are performed, disregarding the return value of this function.
+	 * Robustness checks are performed, disregarding the return value of this function.
 	 * @param SoDs Stores SoD constraints
 	 * @return {@code true} if SoD constraints are not null, {@code false} otherwise.
 	 */

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * This class stores every single information about the resilience of a Petri net gathered from {@link ResilienceChecker}.
+ * This class stores every single information about the robustness of a Petri net gathered from {@link RobustnessChecker}.
  * 
  * @author Patrick Notz
  *
@@ -14,8 +14,9 @@ public class Report{
 	private Vector<WSPTransition> sequence = new Vector<WSPTransition>();
 	private WSPTransition transition = null;
 	private String WSPInfo = "";
-	private List<String> relevantUsers = new ArrayList<String>();	
-	private Vector<String> TestedUsers = new Vector<String>();
+	private List<String> allSubjects = new ArrayList<String>();	
+	private List<String> relevantSubjects = new ArrayList<String>();	
+	private Vector<String> testedSubjects = new Vector<String>();
 	private String boDInfo = new String();
 	private String soDInfo = new String();
 
@@ -24,7 +25,7 @@ public class Report{
 	 *  Therefore the hashCode of relevant components needs to be compared.
 	 */
     public int hashCode() {
-        return getSequence().hashCode() + getTransition().hashCode() + getRelevantUsers().hashCode() + getBoDInfo().hashCode() + getSoDInfo().hashCode();
+        return getSequence().hashCode() + getTransition().hashCode() + getRelevantSubjects().hashCode() + getBoDInfo().hashCode() + getSoDInfo().hashCode();
     }
 	
 	public Vector<WSPTransition> getSequence() {
@@ -39,19 +40,27 @@ public class Report{
 	public void setTransition(WSPTransition transition) {
 		this.transition = transition;
 	}
-	public List<String> getRelevantUsers() {
-		return relevantUsers;
+	public List<String> getRelevantSubjects() {
+		return relevantSubjects;
 	}
-	public void setRelevantUsers(List<String> relevantUsers) {
-		this.relevantUsers = relevantUsers;
-	}
-
-	public Vector<String> getTestedUsers() {
-		return TestedUsers;
+	public void setRelevantSubjects(List<String> relevantSubjects) {
+		this.relevantSubjects = relevantSubjects;
 	}
 
-	public void setTestedUsers(Vector<String> testedUsers) {
-		TestedUsers = testedUsers;
+	public Vector<String> getTestedSubjects() {
+		return testedSubjects;
+	}
+
+	public void setTestedSubjects(Vector<String> testedSubjects) {
+		this.testedSubjects = testedSubjects;
+	}
+	
+	public List<String> getAllSubjects() {
+		return allSubjects;
+	}
+
+	public void setAllSubjects(List<String> allSubjects) {
+		this.allSubjects = allSubjects;
 	}
 
 	public String getBoDInfo() {

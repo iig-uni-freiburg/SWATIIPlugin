@@ -1,43 +1,39 @@
 package de.uni.freiburg.iig.telematik.swatiiplugin.patrick;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import com.google.common.collect.Sets;
 import de.invation.code.toval.misc.soabase.SOABase;
 import de.invation.code.toval.misc.soabase.SOABaseProperties;
 import de.invation.code.toval.parser.ParserException;
 import de.uni.freiburg.iig.telematik.sepia.exception.PNValidationException;
 import de.uni.freiburg.iig.telematik.sepia.graphic.AbstractGraphicalPN;
-import de.uni.freiburg.iig.telematik.sepia.parser.PNParsing;
+import de.uni.freiburg.iig.telematik.sepia.parser.pnml.PNMLParser;
 import de.uni.freiburg.iig.telematik.sepia.petrinet.properties.PropertyCheckingResult;
 import de.uni.freiburg.iig.telematik.sepia.util.PNUtils;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.lattice.RoleLattice;
 
 /**
- * Test class for creating and parsing a Petri net with a RBAC Model with the goal to organize the input for the class {@link ResilienceChecker}.<br>
+ * Test class for creating and parsing a Petri net with a RBAC Model with the goal to organize the input for the class {@link RobustnessChecker}.<br>
  * Optionally, Separation of Duty (SoD) and / or Binding of Duty (BoD) constraints can be defined.<br>
- * ResilienceChecker returns an instance of the class {@link ResilienceProperties}.<br>
+ * RobustnessChecker returns an instance of the class {@link RobustnessProperties}.<br>
  * The return value is going to be checked and printed in form of a report.
  * 
  * @author Patrick Notz
  *
  */
 
-public class TestResilience {
+public class TestRobustness {
 	
 	private static Set transitions = null;
-	private static ResilienceProperties result = new ResilienceProperties();
+	private static RobustnessProperties result = new RobustnessProperties();
 	
 	
 	/**
-	 * Calls up different functions to call {@link ResilienceChecker} and output the results.
+	 * Calls up different functions to call {@link RobustnessChecker} and output the results.
 	 * @param args
 	 * @throws Exception
 	 */
@@ -65,11 +61,11 @@ public class TestResilience {
 		 */
 		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Conduct_interview", null)));
 		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Select_candidate", null)));
-		//BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
+		// BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
 
 		// Parse Petri Net in order to access transitions and paths
 		String net_path = "src/de/uni/freiburg/iig/telematik/swatiiplugin/patrick/ressources/Einstellungsprozess1.pnml";
-		AbstractGraphicalPN net = parse_petri_net(net_path);
+		AbstractGraphicalPN net = parsePetriNet(net_path);
 		
 		// Create RBAC Model
 		RBACModel acmodel = createRbacModel();
@@ -79,27 +75,27 @@ public class TestResilience {
 		userset.add("Alice");
 		userset.add("Bob");
 		userset.add("Claire");
-		Vector<String> userDeletionCombi = createDeletionCombi(userset);
 		
-		// Check for resilience
-		result = ResilienceChecker.checkForResilience(net, acmodel, BoDs, SoDs, userDeletionCombi);
+		// Check for robustness
+		result = RobustnessChecker.checkForRobustness(net, acmodel, BoDs, SoDs, userset);
 		
-		// Print results of ResilienceChecker
-		outputReport();
+		// Print results of RobustnessChecker
+		//outputReport();
+		result.printReport();
 	}
 	
 	
 	/**
-	 * Print results of ResilienceChecker stored in the variable "result"
+	 * Print results of RobustnessChecker stored in the variable "result"
 	 */
 	private static void outputReport() {
 		if (result.exception.isEmpty()) {
 			if (result.isSatifiable == PropertyCheckingResult.TRUE)
-				// Output of resilience information
+				// Output of robustness information
 				result.printReport();
 			else
 				// WSP found for whole workflow (all sequences)
-				System.out.println("The whole Workflow is not satisfiable");
+				System.out.println("The workflow is not satisfiable");
 		}
 		else {
 			// Output of all exceptions
@@ -107,26 +103,6 @@ public class TestResilience {
 				System.out.println(result.exception.get(i));
 			}
 		}
-	}
-
-	
-	/**
-	 * Creates, sorts and returns the cartesian product of a set of user.
-	 *       
-	 * @param userset Set of user which should be taken from the workflow, e.g. [Claire, Bob, Alice]
-	 * @return Cartesian product of userset, e.g. [Claire], [Bob], [Bob, Claire], [Alice], [Alice, Claire], [Alice, Bob], [Alice, Bob, Claire]
-	 */
-	private static Vector<String> createDeletionCombi(HashSet<String> userset) {	
-		Vector<String> userDeletionCombi = new Vector<String>();
-		Set<Set<String>> set = Sets.powerSet(userset);
-		for(Set<String> item : set){	
-			List sortedList = new ArrayList(item);
-			Collections.sort(sortedList);
-			userDeletionCombi.add(String.valueOf(sortedList));
-		}	
-		// userDeletionCombi[0] = []
-		userDeletionCombi.remove(0);
-		return userDeletionCombi;
 	}
 
 	
@@ -139,15 +115,16 @@ public class TestResilience {
 	 * @throws ParserException
 	 * @throws PNValidationException
 	 */
-	static AbstractGraphicalPN parse_petri_net(String path) throws IOException, ParserException, PNValidationException {
+	static AbstractGraphicalPN parsePetriNet(String path) throws IOException, ParserException, PNValidationException {
 		// Parsing Petri Net
 		try {
-			AbstractGraphicalPN net = PNParsing.parse(new File(path));
+			PNMLParser p = new PNMLParser();
+			AbstractGraphicalPN net = p.parse(new File(path), true, false);
 			// Store transitions of the Petri Net
 			transitions = PNUtils.getNameSetFromTransitions(net.getPetriNet().getTransitions(), false);
 			return net;
 		} catch (Exception e) {
-			return null;
+			throw new ParserException(e.getMessage());
 		}
 	}
 	
@@ -206,7 +183,7 @@ public class TestResilience {
 			acmodel.addRoleMembership("Alice", "ab");
 			acmodel.addRoleMembership("Bob", "ab");
 			transitions_for_ab.add("Arrange_meeting_with_new_candidate1");
-			transitions_for_ab.add("Conduct_interview");
+			transitions_for_ab.add("Select_candidate");
 			acmodel.setActivityPermission("ab", transitions_for_ab);
 			
 			acmodel.addRoleMembership("Bob", "b");
@@ -219,7 +196,7 @@ public class TestResilience {
 			transitions_for_bc.add("Develop_recruitment_strategy");
 			transitions_for_bc.add("Arrange_meeting_with_new_candidate0");
 			transitions_for_bc.add("Arrange_meeting_with_new_candidate2");		
-			transitions_for_bc.add("Select_candidate");
+			transitions_for_bc.add("Conduct_interview");
 			acmodel.setActivityPermission("bc", transitions_for_bc);
 			
 			acmodel.addRoleMembership("Dave", "de");

@@ -59,7 +59,7 @@ public class WSPTransition extends PTTransition {
 	 * @param user User who are allowed to fire the WSPTransition
 	 * @param wspnumber Number that is associated to a WSPTransition.<br>
 	 * It is needed to create a file in DIMACS format.
-	 * @param Number that is associated to a user of a WSPTransition.<br>
+	 * @param wspuser Number that is associated to a user of a WSPTransition.<br>
 	 * It is needed to create a file in DIMACS format.
 	 * @return Returns a cloned WSPTransition
 	 */

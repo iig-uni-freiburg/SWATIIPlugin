@@ -6,7 +6,7 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.patrick;
  * @author Patrick Notz
  * 
  */
-public class BoDSoD{
+public class BoDSoD implements Comparable{
 	private WSPTransition t1 = null;
 	private WSPTransition t2 = null;
 	public BoDSoD(WSPTransition t1, WSPTransition t2) {
@@ -24,5 +24,12 @@ public class BoDSoD{
 	}
 	public void setT2(WSPTransition t2) {
 		this.t2 = t2;
+	}
+	
+	// This is neccessary to sort BoDs and SoDs by the first transition
+	@Override
+	public int compareTo(Object o) {
+		BoDSoD e = (BoDSoD) o;
+		return this.getT1().getName().compareTo(e.getT1().getName());
 	}	
 }
