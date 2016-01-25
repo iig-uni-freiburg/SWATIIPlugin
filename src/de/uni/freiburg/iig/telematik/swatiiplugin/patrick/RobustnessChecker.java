@@ -84,6 +84,7 @@ public class RobustnessChecker {
 						if (!wspcalc.result.exception.isEmpty()) {
 							for (int z = 0; z < wspcalc.result.exception.size(); z++)
 								result.exception.add(wspcalc.result.exception.get(z));
+							return result;
 						}
 						if (!wspcalc.WSP) {
 							for (int j = 0; j < sequences.get(i).size(); j++) {
@@ -714,9 +715,11 @@ public class RobustnessChecker {
 		if (result.report.isEmpty()) 
 			result.report.add(report);
 		else {
-			for (Iterator<Report> it = result.report.iterator(); it.hasNext();) { 
-				if (report.hashCode() == it.next().hashCode())
-					duplicate = true;
+			for (Iterator<Report> it = result.report.iterator(); it.hasNext();) {
+				Report tempReport = it.next();
+				if (tempReport.getWSPInfo().isEmpty())
+					if (report.hashCode() == tempReport.hashCode())
+						duplicate = true;
 			}
 			
 			if (!duplicate)

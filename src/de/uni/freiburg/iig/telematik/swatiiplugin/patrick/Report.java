@@ -25,7 +25,7 @@ public class Report{
 	 *  Therefore the hashCode of relevant components needs to be compared.
 	 */
     public int hashCode() {
-        return getSequence().hashCode() + getTransition().hashCode() + getRelevantSubjects().hashCode() + getBoDInfo().hashCode() + getSoDInfo().hashCode();
+    	return getSequence().hashCode() + getTransition().hashCode() + getRelevantSubjects().hashCode() + getBoDInfo().hashCode() + getSoDInfo().hashCode();
     }
 	
 	public Vector<WSPTransition> getSequence() {

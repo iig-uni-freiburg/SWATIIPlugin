@@ -11,7 +11,6 @@ import de.invation.code.toval.parser.ParserException;
 import de.uni.freiburg.iig.telematik.sepia.exception.PNValidationException;
 import de.uni.freiburg.iig.telematik.sepia.graphic.AbstractGraphicalPN;
 import de.uni.freiburg.iig.telematik.sepia.parser.pnml.PNMLParser;
-import de.uni.freiburg.iig.telematik.sepia.petrinet.properties.PropertyCheckingResult;
 import de.uni.freiburg.iig.telematik.sepia.util.PNUtils;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.lattice.RoleLattice;
@@ -53,7 +52,7 @@ public class TestRobustness {
 		SoDs.add(new BoDSoD(new WSPTransition("Post_job_internally", null), new WSPTransition("Examine_existing_resumes_on_file", null)));
 		// SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Develop_interview_questions", null)));
 		// SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Make_employment_offer", null)));
-		 SoDs.add(new BoDSoD(new WSPTransition("Determine_pay_range", null), new WSPTransition("Arrange_meeting_with_new_candidate1", null)));
+		// SoDs.add(new BoDSoD(new WSPTransition("Determine_pay_range", null), new WSPTransition("Arrange_meeting_with_new_candidate1", null)));
 
 		/* 
 		 * Create BoDs
@@ -61,7 +60,7 @@ public class TestRobustness {
 		 */
 		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Conduct_interview", null)));
 		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Select_candidate", null)));
-		 BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
+		// BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
 
 		// Parse Petri Net in order to access transitions and paths
 		String netPath = "src/de/uni/freiburg/iig/telematik/swatiiplugin/patrick/ressources/Einstellungsprozess1.pnml";
@@ -110,11 +109,12 @@ public class TestRobustness {
 	/**
 	 * Creates a RBAC model which needs to be compatible to the transitions of the Petri net which is parsed. 
 	 * @return Instance of the class {@link RBACModel} which represents an access control model
+	 * @throws Exception 
 	 */
-	static RBACModel createRbacModel() {
+	static RBACModel createRbacModel() throws Exception {
 		RBACModel acmodel = null;
 		try {
-			// Creating User
+			// Creating subjects
 			Set<String> subjects = new HashSet<String>();
 			subjects.add("Alice");
 			subjects.add("Bob");
@@ -187,7 +187,7 @@ public class TestRobustness {
 	
 			return acmodel;
 		} catch (Exception e) {
-			return null;
+			throw new Exception(e.getMessage());
 		}
 	}
 }

@@ -54,12 +54,14 @@ public class WSPCalculation {
 			convertToDimacs(sequence, emptyVector);
 		}
 		
-		createSAT4JFile(DimacsTransitions.size());
-		if (runSolver()) {
-			WSP = false;
-		}
-		else {
-			WSP = true;
+		if (result.exception.isEmpty()) {
+			createSAT4JFile(DimacsTransitions.size());
+			if (runSolver()) {
+				WSP = false;
+			}
+			else {
+				WSP = true;
+			}
 		}
 	}
 	
@@ -105,26 +107,32 @@ public class WSPCalculation {
 		Integer count = 0;
 		for (int i = 0; i < onesequence.size(); i++) {
 			WSPTransition currentTransition = onesequence.get(i);
-			for (int j = 0; j < currentTransition.getAuthorizedUsers().size(); j++) {
-				count++;
-				currentTransition.setWSPuser(currentTransition.getAuthorizedUsers().get(j));
-				currentTransition.setWSPNumber(count);
-				DimacsTransitions.addElement(currentTransition.clone());
+			if (currentTransition.getAuthorizedUsers().size() == 0)
+				result.exception.add("No subjects authorized to execute " + currentTransition);
+			else {
+				for (int j = 0; j < currentTransition.getAuthorizedUsers().size(); j++) {
+					count++;
+					currentTransition.setWSPuser(currentTransition.getAuthorizedUsers().get(j));
+					currentTransition.setWSPNumber(count);
+					DimacsTransitions.addElement(currentTransition.clone());
+				}
+				convertXOR(count, currentTransition.getAuthorizedUsers().size());
 			}
-			convertXOR(count, currentTransition.getAuthorizedUsers().size());
 		}
 			
-		for (int i = 0; i < DimacsTransitions.size(); i++) {
-			for (int z = 0; z < DimacsTransitions.size(); z++) {
-				if (DimacsTransitions.elementAt(i).getWSPuser().contentEquals(DimacsTransitions.elementAt(z).getWSPuser()) && DimacsTransitions.elementAt(i).getName().compareTo(DimacsTransitions.elementAt(z).getName()) < 0) {
-					for (int j = 0; j < SoDConstraints_for_sequence.size(); j++) {
-						if (SoDConstraints_for_sequence.get(j).getT1().getName().toString().contentEquals(DimacsTransitions.elementAt(i).getName())&& SoDConstraints_for_sequence.get(j).getT2().getName().contentEquals(DimacsTransitions.elementAt(z).getName())) {
-							constraints.add(convertNAND((i + 1) + " " + (z + 1)) + " 0");
-							amount_constraints++;
-						}
-						if (SoDConstraints_for_sequence.get(j).getT2().getName().contentEquals(DimacsTransitions.elementAt(i).getName())&& SoDConstraints_for_sequence.get(j).getT1().getName().contentEquals(DimacsTransitions.elementAt(z).getName())) {
-							constraints.add(convertNAND((i + 1) + " " + (z + 1)) + " 0");
-							amount_constraints++;
+		if (result.exception.isEmpty()) {
+			for (int i = 0; i < DimacsTransitions.size(); i++) {
+				for (int z = 0; z < DimacsTransitions.size(); z++) {
+					if (DimacsTransitions.elementAt(i).getWSPuser().contentEquals(DimacsTransitions.elementAt(z).getWSPuser()) && DimacsTransitions.elementAt(i).getName().compareTo(DimacsTransitions.elementAt(z).getName()) < 0) {
+						for (int j = 0; j < SoDConstraints_for_sequence.size(); j++) {
+							if (SoDConstraints_for_sequence.get(j).getT1().getName().toString().contentEquals(DimacsTransitions.elementAt(i).getName())&& SoDConstraints_for_sequence.get(j).getT2().getName().contentEquals(DimacsTransitions.elementAt(z).getName())) {
+								constraints.add(convertNAND((i + 1) + " " + (z + 1)) + " 0");
+								amount_constraints++;
+							}
+							if (SoDConstraints_for_sequence.get(j).getT2().getName().contentEquals(DimacsTransitions.elementAt(i).getName())&& SoDConstraints_for_sequence.get(j).getT1().getName().contentEquals(DimacsTransitions.elementAt(z).getName())) {
+								constraints.add(convertNAND((i + 1) + " " + (z + 1)) + " 0");
+								amount_constraints++;
+							}
 						}
 					}
 				}
