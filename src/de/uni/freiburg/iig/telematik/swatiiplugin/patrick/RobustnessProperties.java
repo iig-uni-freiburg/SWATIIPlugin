@@ -26,17 +26,22 @@ public class RobustnessProperties {
 	 * (Vital subjects): Bob<br>
 	 * (SODInfo)<br>
 	 * (BoDInfo)<br>
+	 * @param net_path 
 	 */
-	public void printReport() {
+	public void printReport(String netPath) {
+		String nameOfNet = netPath.substring(netPath.lastIndexOf("/") +1, netPath.length());
+		if (nameOfNet.isEmpty())
+			nameOfNet = netPath;
 		if (!report.isEmpty() && exception.isEmpty()) {
-			if (!report.get(0).getTestedSubjects().isEmpty())
-				System.out.println("Examine the relevance regarding robustness in a WF-Net for the following combinations of subjects: " + "\n"+ report.get(0).getTestedSubjects() + "\n");
+			if (!report.get(0).getTestedSubjects().isEmpty()) {
+				System.out.println("Examine the relevance regarding robustness of the WF-Net: \n" + nameOfNet);
+				System.out.println("\nThe following combinations of subjects are considered as relevant: " + "\n"+ report.get(0).getTestedSubjects() + "\n");
+			}
 			int sequenceCounter = 1;
 			if (isSatifiable == PropertyCheckingResult.TRUE)
 				System.out.println("The workflow is satisfiable");
 			if (isSatifiable == PropertyCheckingResult.FALSE)
 				System.out.println("The workflow is not satisfiable");
-			
 			if (isSatifiable == PropertyCheckingResult.TRUE) {
 				if (getNumberOfSequences() == 1)
 					System.out.println("The WF-Net contains one sequences" + "\n");

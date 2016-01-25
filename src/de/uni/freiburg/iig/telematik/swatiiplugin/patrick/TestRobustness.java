@@ -53,7 +53,7 @@ public class TestRobustness {
 		SoDs.add(new BoDSoD(new WSPTransition("Post_job_internally", null), new WSPTransition("Examine_existing_resumes_on_file", null)));
 		// SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Develop_interview_questions", null)));
 		// SoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Make_employment_offer", null)));
-		// SoDs.add(new BoDSoD(new WSPTransition("Determine_pay_range", null), new WSPTransition("Arrange_meeting_with_new_candidate1", null)));
+		 SoDs.add(new BoDSoD(new WSPTransition("Determine_pay_range", null), new WSPTransition("Arrange_meeting_with_new_candidate1", null)));
 
 		/* 
 		 * Create BoDs
@@ -61,11 +61,11 @@ public class TestRobustness {
 		 */
 		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Conduct_interview", null)));
 		BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Select_candidate", null)));
-		// BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
+		 BoDs.add(new BoDSoD(new WSPTransition("Develop_interview_questions", null), new WSPTransition("Determine_pay_range", null)));
 
 		// Parse Petri Net in order to access transitions and paths
-		String net_path = "src/de/uni/freiburg/iig/telematik/swatiiplugin/patrick/ressources/Einstellungsprozess1.pnml";
-		AbstractGraphicalPN net = parsePetriNet(net_path);
+		String netPath = "src/de/uni/freiburg/iig/telematik/swatiiplugin/patrick/ressources/Einstellungsprozess1.pnml";
+		AbstractGraphicalPN net = parsePetriNet(netPath);
 		
 		// Create RBAC Model
 		RBACModel acmodel = createRbacModel();
@@ -80,29 +80,7 @@ public class TestRobustness {
 		result = RobustnessChecker.checkForRobustness(net, acmodel, BoDs, SoDs, userset);
 		
 		// Print results of RobustnessChecker
-		//outputReport();
-		result.printReport();
-	}
-	
-	
-	/**
-	 * Print results of RobustnessChecker stored in the variable "result"
-	 */
-	private static void outputReport() {
-		if (result.exception.isEmpty()) {
-			if (result.isSatifiable == PropertyCheckingResult.TRUE)
-				// Output of robustness information
-				result.printReport();
-			else
-				// WSP found for whole workflow (all sequences)
-				System.out.println("The workflow is not satisfiable");
-		}
-		else {
-			// Output of all exceptions
-			for (int i=0; i<result.exception.size(); i++) {
-				System.out.println(result.exception.get(i));
-			}
-		}
+		result.printReport(netPath);
 	}
 
 	
