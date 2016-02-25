@@ -6,10 +6,13 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleContainer.*;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleObjects.*;
 import alice.tuprolog.*;
-
-import de.invation.code.toval.parser.ParserException;
-import de.uni.freiburg.iig.telematik.sewol.log.*;
-import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
+import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
+import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.lattice.RoleLattice;
+import de.uni.freiburg.iig.telematik.sewol.log.EventType;
+import de.uni.freiburg.iig.telematik.swatiiplugin.relations.EgoRelationException;
+import de.uni.freiburg.iig.telematik.swatiiplugin.relations.Relation;
+import de.uni.freiburg.iig.telematik.swatiiplugin.relations.Relations;
+import java.util.Arrays;
 
 /**
  *
@@ -21,62 +24,52 @@ public class SWATIIPlugin {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        // Create rule
+        And a = new And();
+        Hap h = new Hap(Hap.Letter.A, EventType.complete); 
+        Hap h2 = new Hap(Hap.Letter.B, EventType.complete);        
+        Type t = new Type(Type.Letter.A, Type.Comparator.EQUAL, "A");
+        Type t2 = new Type(Type.Letter.B, Type.Comparator.EQUAL, "B");
+        Or o = new Or();
+        Related r = new Related(Related.Letter.A, Related.Letter.B);
+        Originator og = new Originator(Originator.Letter.A, Originator.Comparator.EQUAL, Originator.Letter.B);
+        o.add(r);
+        o.add(og);
+        a.add(h);
+        a.add(t);        
+        a.add(h2);        
+        a.add(t2);        
+        a.add(o);
+        Rule rf = new Rule("rule_false");
+        rf.add(a);
+        
+        // Create Relations
+        Relations rels = new Relations();
         try {
-            // Regel erstellen
-            /*Rule rl = new Rule(RuleType.FOUR_EYES);
-            rl.setaType("A");
-            rl.setbType("B");
-            rl.setcType("C");*/
-            // FOUR EYES
-            RuleFalse rf = new RuleFalse();            
-            rf.add(new Type(AbstractRuleObject.Letter.A, AbstractRuleObject.Comparator.EQUAL, "A"));
-            rf.add(new Hap(AbstractRuleObject.Letter.A, EventType.complete));
-            Not n = new Not();
-            n.add(new Type(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, "B"));
-            n.add(new Originator(AbstractRuleObject.Letter.B, AbstractRuleObject.Comparator.EQUAL, AbstractRuleObject.Letter.A));            
-            n.add(new Not().add(new Hap(AbstractRuleObject.Letter.B, EventType.complete)));
-            rf.add(n);
-            
-            System.out.println(rf.toString());
-            
-            // Trace parsen und in einen String packen
-            String traceOut = "";
-            java.util.List<LogTrace<LogEntry>> log = LogParser.parse(new java.io.File("../Logs/4_eyes_principle_correct_BABA.mxml")).get(0);
-            for(LogTrace<LogEntry> trace : log) {                
-                for(LogEntry entry : trace.getEntries()) {
-                    String actString = "hap(activity(0, " + entry.getEventType().name() + ",'";
-                    actString += entry.getActivity() + "','" + entry.getOriginator() + "','";
-                    actString += entry.getRole() + "')," + entry.getTimestamp().getTime() + ").\n";
-                    traceOut +=  actString;
-                    System.out.print(actString);
-                }
-            }
-            
-            // Traces und Regel zusammensetzen            
-            String query = new String();
-            query += traceOut;
-            query += "\n";
-            query += "\n";
-            query += rf.toString();
-
-            // Prolog starten
-            Prolog engine = new Prolog();
-            Theory theory = new Theory(query);
-            engine.setTheory(theory);
-            SolveInfo info = engine.solve("rule_false.");
-
-            // Ergebnis           
-            
-            System.out.println("Result: " + !info.isSuccess());
-
-        } catch (MalformedGoalException ex) {
-            System.out.println("Ziel falsch gesetzt");
-        } catch (InvalidTheoryException ex) {
-            System.out.println("Theorie nicht gültig");
-        } catch (java.io.IOException ex) {
-            System.out.println("Datei nicht gefunden");
-        } catch (ParserException ex) {
-            System.out.println("Parser putt");
+            rels.addRelated(new Relation("S1", "S2"));
+        } catch (EgoRelationException ex) {
+            System.out.println("Some strange Error");
+        }
+        
+        // Create RBAC
+        RoleLattice lattice = new RoleLattice(Arrays.asList("r1", "r2"));
+        lattice.addRelation("R1", "R2");
+        RBACModel rbac = new RBACModel("RBAC", lattice);
+        rbac.setRightsPropagation(true);
+        rbac.setRoleMembership("R1", Arrays.asList("S1"));
+        rbac.setRoleMembership("R2", Arrays.asList("S2"));
+        rbac.setActivityPermission("R1", "A");
+        rbac.setActivityPermission("R2", "B");
+        System.out.println(rbac.toString());
+        
+        Solver s = new Solver();
+        String path = "logs/4_eyes_principle_correct_BABA.mxml";
+        String[] input = {path, rels.toString(), rf.toString(), "related('S2','S1')."};
+        SolveInfo info = s.solve(input, rbac);
+        if(info != null && info.isSuccess()) {
+            System.out.println("Match for the Rule found");
+        } else {
+            System.out.println("No Match for the Rule found");
         }
     }
 }
