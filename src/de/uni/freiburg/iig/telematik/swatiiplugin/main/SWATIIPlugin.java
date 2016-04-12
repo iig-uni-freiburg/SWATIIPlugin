@@ -6,6 +6,7 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleContainer.*;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.RuleObjects.*;
 import alice.tuprolog.*;
+import de.invation.code.toval.misc.soabase.SOABase;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.lattice.RoleLattice;
 import de.uni.freiburg.iig.telematik.sewol.log.EventType;
@@ -52,15 +53,17 @@ public class SWATIIPlugin {
         }
         
         // Create RBAC
-        RoleLattice lattice = new RoleLattice(Arrays.asList("r1", "r2"));
-        lattice.addRelation("R1", "R2");
-        RBACModel rbac = new RBACModel("RBAC", lattice);
+        SOABase base = new SOABase("base");
+        base.setActivities("A", "B");
+        base.setSubjects("S1", "S2");
+        RoleLattice lattice = new RoleLattice(Arrays.asList("R1", "R2"));
+        lattice.addRelation("R1", "R2");        
+        RBACModel rbac = new RBACModel("RBAC", base, lattice);
         rbac.setRightsPropagation(true);
         rbac.setRoleMembership("R1", Arrays.asList("S1"));
         rbac.setRoleMembership("R2", Arrays.asList("S2"));
         rbac.setActivityPermission("R1", "A");
-        rbac.setActivityPermission("R2", "B");
-        System.out.println(rbac.toString());
+        rbac.setActivityPermission("R2", "B");        
         
         Solver s = new Solver();
         String path = "logs/4_eyes_principle_correct_BABA.mxml";

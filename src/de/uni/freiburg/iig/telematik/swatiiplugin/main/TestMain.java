@@ -4,8 +4,6 @@
  */
 package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 
-import de.uni.freiburg.iig.telematik.swatiiplugin.rbac.*;
-
 /**
  *
  * @author mosers

@@ -12,6 +12,8 @@ import de.uni.freiburg.iig.telematik.sewol.log.LogEntry;
 import de.uni.freiburg.iig.telematik.sewol.log.LogTrace;
 import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 public class Solver {
     /**
@@ -25,7 +27,7 @@ public class Solver {
             String out = "";
             out += logToString(LogParser.parse(new java.io.File(input[0])).get(0));
             out += "\n\n" + RBACToString(rbac) 
-                + "user(U,T):-belong(S,R),role(R,T).\n"     //Basic RBAC-rules
+                + "user(U,T):-belong(U,R),role(R,T).\n"     //Basic RBAC-rules
                 + "no_permissions:-(\n"    
                 + "hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
                 + "not(user(AOriginator,AType),\n"
@@ -42,7 +44,7 @@ public class Solver {
                 + "hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
                 + "(cannot_do_u(AOriginator,AType);\n"
                 + "cannot_do_R(ARole,AType);\n"
-                + "(must_execute_u(BOriginator),not(AOriginator = BOriginator));"
+                + "(must_execute_u(BOriginator),not(AOriginator = BOriginator));\n"
                 + "(must_execute_R(BRole),not(ARole = BRole)))).";  
             
             System.out.println(out);
@@ -71,8 +73,25 @@ public class Solver {
      */
     public String RBACToString(RBACModel rbac) {
         String out = "";
-        
-        return out;
+        Set<String> roles = rbac.getRoles();
+        for(String role : roles) {
+            Set<String> rtransactions = rbac.getAuthorizedTransactionsForRole(role);
+            for(String rtransaction : rtransactions) {
+                out += "role('" + role + "','" + rtransaction + "').\n";
+            }            
+        }
+        Set<String> subjects = rbac.getContext().getSubjects();
+        for(String subject : subjects) {
+            Set<String> sroles = rbac.getRolesFor(subject, true);
+            for(String srole : sroles) {
+                out += "belong('" + subject + "','" + srole + "').\n";   
+            }
+            List<String> stransactions = rbac.getAuthorizedTransactionsForSubject(subject);
+            for(String stransaction : stransactions) {
+                out += "user('" + subject + "','" + stransaction + "').\n";
+            }
+        }
+        return out + "\n";
     }
     
     /**
