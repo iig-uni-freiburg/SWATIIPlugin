@@ -67,7 +67,7 @@ public class SWATIIPlugin {
         
         Solver s = new Solver();
         String path = "logs/4_eyes_principle_correct_BABA.mxml";
-        String[] input = {path, rels.toString(), rf.toString(), "related('S2','S1')."};
+        String[] input = {path, rels.toString(), rf.toString(), "rule_false"};
         SolveInfo info = s.solve(input, rbac);
         if(info != null && info.isSuccess()) {
             System.out.println("Match for the Rule found");
