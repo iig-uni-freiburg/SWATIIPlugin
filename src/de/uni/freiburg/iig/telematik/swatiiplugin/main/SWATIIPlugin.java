@@ -26,7 +26,7 @@ public class SWATIIPlugin {
      */
     public static void main(String[] args) {
         // Create rule
-        And a = new And();
+        /*And a = new And();
         Hap h = new Hap(Hap.Letter.A, EventType.complete); 
         Hap h2 = new Hap(Hap.Letter.B, EventType.complete);        
         Type t = new Type(Type.Letter.A, Type.Comparator.EQUAL, "A");
@@ -42,7 +42,9 @@ public class SWATIIPlugin {
         a.add(t2);        
         a.add(o);
         Rule rf = new Rule("rule_false");
-        rf.add(a);
+        rf.add(a);*/
+        
+        String rf = "";
         
         // Create Relations
         Relations rels = new Relations();

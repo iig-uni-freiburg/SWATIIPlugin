@@ -28,6 +28,30 @@ public class Solver {
         try {
             String prolog = "%\n% Logs\n%\n";
             prolog += logToString(LogParser.parse(new java.io.File(input[0])).get(0));
+            prolog += "\n\n%\n% Functions\n%\n\n"
+                    + "% Sums up all elements of a given grouping fact.\n"
+                    + "% Example: sum(T, e('P1',_,_,_,_,_,_,T), Sum).\n"
+                    + "% Returns: Sum / 7199820286610\n"
+                    + "sum(X,P,S) :- (\n"
+                    + "    findall(X,P,L),\n"
+                    + "	   sumlist(L,S)\n"
+                    + ").\n"
+                    + "\n"
+                    + "% Sums up all elements in the given list.\n"
+                    + "% Example: sumlist([1,2,3,4], S).\n"
+                    + "% Returns: S / 10\n"
+                    + "sumlist([],0).\n"
+                    + "sumlist([H|T],R) :- (\n"
+                    + "	   sumlist(T,S),\n"
+                    + "	   R is S+H\n"
+                    + ").\n"
+                    + "% Counts occurrences of a fact with the given pattern. Can contain duplicates.\n"
+                    + "% Example: countall(e(P,TRACE,TYPE,A,sub_2,R,D,T), N).\n"
+                    + "% Returns: N / 2\n"
+                    + "countall(P,N) :- (\n"
+                    + "    findall(_,P,L),\n"
+                    + "    length(L,N)\n"
+                    + ").\n";
             prolog += "\n\n%\n% RBAC\n%\n\n"
                     + "% RBAC-assignment\n"
                     + RBACToString(rbac)
@@ -63,14 +87,13 @@ public class Solver {
                     + "    );\n"
                     + "    no_permissions\n"
                     + ").\n\n"
-                    + "% User-defined rules\n"                    
+                    + "% User-defined rules\n"
                     + input[2]
                     + "\n% Target rule\n"
                     + "go:-(\n"
                     + "%    enforcement_breached;\n"
                     + "    " + input[3] + "\n"
                     + ").";
-            
 
             System.out.println(prolog);
 
