@@ -1,6 +1,8 @@
 package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 
 import alice.tuprolog.*;
+import alice.tuprolog.event.OutputEvent;
+import alice.tuprolog.event.OutputListener;
 import de.invation.code.toval.parser.ParserException;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 
@@ -15,7 +17,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-public class Solver {
+public class Solver implements OutputListener {
+
+    private String output;
 
     /**
      * Solves rules for given log file and rules
@@ -27,7 +31,7 @@ public class Solver {
     public SolveInfo solve(String[] input, RBACModel rbac) {
         try {
             String prolog = "%\n% Logs\n%\n";
-            prolog += logToString(LogParser.parse(new java.io.File(input[0])).get(0));
+            prolog += logToPlString(LogParser.parse(new java.io.File(input[0])).get(0));
             prolog += "\n\n%\n% Functions\n%\n\n"
                     + "% Sums up all elements of a given grouping fact.\n"
                     + "% Example: sum(T, e('P1',_,_,_,_,_,_,T), Sum).\n"
@@ -51,16 +55,61 @@ public class Solver {
                     + "countall(P,N) :- (\n"
                     + "    findall(_,P,L),\n"
                     + "    length(L,N)\n"
+                    + ").\n"
+                    + "%\n% OUTPUT\n%\n"
+                    + "output_start :- print(\"<violation>\"),nl.\n"                    
+                    + "values_start :- print(\"<values>\"),nl.\n"
+                    + "entries_start :- print(\"<entries>\"),nl.\n"
+                    + "entry_output(P,TRACE,TYPE,A,S,R,D,T) :- (\n"
+                    + "    print(\"<entry>\"),\n"
+                    + "    print(\"<process>\"),print(P),print(\"</process>\"),\n"
+                    + "	   print(\"<trace>\"),print(TRACE),print(\"</trace>\"),\n"
+                    + "	   print(\"<type>\"),print(TYPE),print(\"</type>\"),\n"
+                    + "	   print(\"<activity>\"),print(A),print(\"</activity>\"),\n"
+                    + "	   print(\"<subject>\"),print(S),print(\"</subject>\"),\n"
+                    + "	   print(\"<role>\"),print(R),print(\"</role>\"),\n"
+                    + "	   print(\"<data>\"),data_output(D),print(\"</data>\"),\n"
+                    + "	   print(\"<time>\"),print(T),print(\"</time>\"),\n"
+                    + "	   print(\"</entry>\")\n"
+                    + ").\n"
+                    + "message_output(M) :- (\n"
+                    + "	   print(\"<message>\"),\n"
+                    + "	   print(M),\n"
+                    + "	   print(\"</message>\")\n"
+                    + ").\n"
+                    + "value_output(K,V) :- (\n"
+                    + "	   print(\"<value key=\"\"\"),\n"
+                    + "	   print(K),\n"
+                    + "	   print(\"\"\">\"),\n"
+                    + "	   print(V),\n"
+                    + "	   print(\"</value>\"),nl\n"
+                    + ").\n"
+                    + "name_output(M) :- (\n"
+                    + "	   print(\"<name>\"),\n"
+                    + "	   print(M),\n"
+                    + "	   print(\"</name>\"),nl\n"
+                    + ").\n"
+                    + "entries_end :- print(\"</entries>\"),nl.\n"
+                    + "values_end :- print(\"</values>\"),nl.\n"
+                    + "output_end :- print(\"</violation>\"),nl.\n"
+                    + "print_violation2(N,A,B,C,D) :- (\n"
+                    + "    output_start,name_output(N),\n"
+                    + "    values_start,value_output(A,B),\n"
+                    + "    value_output(C,D),values_end,output_end\n"
+                    + ").\n"
+                    + "print_violation1(N,A,B) :- (\n"
+                    + "    output_start,name_output(N),\n"
+                    + "    values_start,value_output(A,B),output_end\n"
                     + ").\n";
             prolog += "\n\n%\n% RBAC\n%\n\n"
                     + "% RBAC-assignment\n"
-                    + RBACToString(rbac)
+                    + RBACToPlString(rbac)
                     + "% Basic RBAC-rules\n"
                     + "user(U,T):-belong(U,R),role(R,T).\n"
                     + "no_permissions:-(\n"
                     + "    hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
                     + "    not(user(AOriginator,AType)),\n"
-                    + "    print('no_permissions')\n"
+                    + "    print_violation2('no_permission','user',AOriginator,'action',AType)\n"
                     + ").\n";
             prolog += "\n\n%\n% Relations\n%\n\n"
                     + "% Relation assignments\n"
@@ -75,16 +124,16 @@ public class Solver {
                     + "% Rule enforcement\n"
                     + "enforcement_breached:-(\n"
                     + "    no_permissions;\n"
-                    + "    hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),(\n"
+                    + "    (hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),(\n"
                     + "        (cannot_do_u(AOriginator,AType),\n"
-                    + "        print('cannot_do_u'),print(AOriginator),print(AType));\n"
+                    + "        print_violation2('cannot_do_u','user',AOriginator,'action',AType));\n"
                     + "        (cannot_do_R(ARole,AType),\n"
-                    + "        print('cannot_do_R'),print(ARole),print(AType));\n"
+                    + "        print_violation2('cannot_do_R','role',ARole,'action',AType));\n"
                     + "        ((must_execute_u(BOriginator),not(AOriginator = BOriginator)),\n"
-                    + "        print('must_execute_u'),print(AOriginator));\n"
+                    + "        print_violation1('must_execute_u','user',AOriginator));\n"
                     + "        ((must_execute_R(BRole),not(ARole = BRole)),\n"
-                    + "        print('must_execute_R'),print(ARole))\n"
-                    + "    )\n"                    
+                    + "        print_violation1('must_execute_R','role',ARole))\n"
+                    + "    ))\n"
                     + ").\n\n"
                     + "% User-defined rules\n"
                     + input[2]
@@ -100,7 +149,10 @@ public class Solver {
             Prolog engine = new Prolog();
             Theory theory = new Theory(prolog);
             engine.setTheory(theory);
-            return engine.solve("go.");  // Target
+            engine.addOutputListener(this);
+            this.resetOutput();
+            SolveInfo info = engine.solve("go.");
+            return info;
         } catch (InvalidTheoryException ex) {
             System.out.println("Invalid Theory");
         } catch (MalformedGoalException ex) {
@@ -117,9 +169,9 @@ public class Solver {
      * Returns a RBAC as a String formatted for prolog
      *
      * @param rbac
-     * @return
+     * @return the output string
      */
-    public String RBACToString(RBACModel rbac) {
+    public String RBACToPlString(RBACModel rbac) {
         String out = "";
         Set<String> roles = rbac.getRoles();
         for (String role : roles) {
@@ -146,9 +198,9 @@ public class Solver {
      * Returns a log as a String formatted for prolog
      *
      * @param log
-     * @return
+     * @return the output string
      */
-    public String logToString(java.util.List<LogTrace<LogEntry>> log) {
+    public String logToPlString(java.util.List<LogTrace<LogEntry>> log) {
         String out = "";
         for (LogTrace<LogEntry> trace : log) {
             for (LogEntry entry : trace.getEntries()) {
@@ -159,5 +211,27 @@ public class Solver {
             }
         }
         return out;
+    }
+
+    /**
+     * @param e the outputevent
+     */
+    @Override
+    public void onOutput(OutputEvent e) {
+        this.output += e.getMsg();
+    }
+
+    /**
+     * @return the output
+     */
+    public String getOutput() {
+        return output;
+    }
+
+    /**
+     * @param output the output to set
+     */
+    private void resetOutput() {
+        this.output = "";
     }
 }

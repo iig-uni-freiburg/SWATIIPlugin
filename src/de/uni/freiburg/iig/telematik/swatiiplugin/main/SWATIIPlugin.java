@@ -23,7 +23,7 @@ public class SWATIIPlugin {
      */
     public static void main(String[] args) {
         // Create rule       
-        String rf = "rule_false:-not(related('S2','S1')).\n";
+        String rf = "rule_false:-cannot_do_u('S2','A'),must_execute_u('A').\n";
         
         // Create Relations
         Relations rels = new Relations();
@@ -50,10 +50,13 @@ public class SWATIIPlugin {
         String path = "logs/4_eyes_principle_correct_BABA.mxml";
         String[] input = {path, rels.toString(), rf.toString(), "rule_false"};
         SolveInfo info = s.solve(input, rbac);
+        String output = s.getOutput();
+        System.out.println("\n\nOUTPUT:\n=======");
+        System.out.println(output + "\n\n");
         if(info != null && info.isSuccess()) {
-            System.out.println("Match for the Rule found");
+            System.out.println("Problem found");
         } else {
-            System.out.println("No Match for the Rule found");
+            System.out.println("No problem found");
         }
     }
 }
