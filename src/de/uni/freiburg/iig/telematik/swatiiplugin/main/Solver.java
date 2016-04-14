@@ -4,6 +4,7 @@ import alice.tuprolog.*;
 import alice.tuprolog.event.OutputEvent;
 import alice.tuprolog.event.OutputListener;
 import de.invation.code.toval.parser.ParserException;
+import de.invation.code.toval.types.HashList;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 
 /**
@@ -13,7 +14,10 @@ import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.log.LogEntry;
 import de.uni.freiburg.iig.telematik.sewol.log.LogTrace;
 import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
+import de.uni.freiburg.iig.telematik.swatiiplugin.logic.Violation;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
@@ -57,18 +61,16 @@ public class Solver implements OutputListener {
                     + "    length(L,N)\n"
                     + ").\n"
                     + "%\n% OUTPUT\n%\n"
-                    + "output_start :- print(\"<violation>\"),nl.\n"                    
-                    + "values_start :- print(\"<values>\"),nl.\n"
-                    + "entries_start :- print(\"<entries>\"),nl.\n"
-                    + "entry_output(P,TRACE,TYPE,A,S,R,D,T) :- (\n"
+                    + "output_start :- print(\"<violation>\").\n"
+                    + "values_start :- print(\"<values>\").\n"
+                    + "entries_start :- print(\"<entries>\").\n"
+                    + "entry_output(P,A,S,R,T) :- (\n"
                     + "    print(\"<entry>\"),\n"
                     + "    print(\"<process>\"),print(P),print(\"</process>\"),\n"
-                    + "	   print(\"<trace>\"),print(TRACE),print(\"</trace>\"),\n"
-                    + "	   print(\"<type>\"),print(TYPE),print(\"</type>\"),\n"
+                    + "%   print(\"<type>\"),print(TYPE),print(\"</type>\"),\n" //,AInstance,AType,AOriginator,ARole,ATime
                     + "	   print(\"<activity>\"),print(A),print(\"</activity>\"),\n"
                     + "	   print(\"<subject>\"),print(S),print(\"</subject>\"),\n"
                     + "	   print(\"<role>\"),print(R),print(\"</role>\"),\n"
-                    + "	   print(\"<data>\"),data_output(D),print(\"</data>\"),\n"
                     + "	   print(\"<time>\"),print(T),print(\"</time>\"),\n"
                     + "	   print(\"</entry>\")\n"
                     + ").\n"
@@ -82,24 +84,23 @@ public class Solver implements OutputListener {
                     + "	   print(K),\n"
                     + "	   print(\"\"\">\"),\n"
                     + "	   print(V),\n"
-                    + "	   print(\"</value>\"),nl\n"
+                    + "	   print(\"</value>\")\n"
                     + ").\n"
                     + "name_output(M) :- (\n"
                     + "	   print(\"<name>\"),\n"
                     + "	   print(M),\n"
-                    + "	   print(\"</name>\"),nl\n"
+                    + "	   print(\"</name>\")\n"
                     + ").\n"
-                    + "entries_end :- print(\"</entries>\"),nl.\n"
-                    + "values_end :- print(\"</values>\"),nl.\n"
+                    + "entries_end :- print(\"</entries>\").\n"
+                    + "values_end :- print(\"</values>\").\n"
                     + "output_end :- print(\"</violation>\"),nl.\n"
-                    + "print_violation2(N,A,B,C,D) :- (\n"
-                    + "    output_start,name_output(N),\n"
-                    + "    values_start,value_output(A,B),\n"
-                    + "    value_output(C,D),values_end,output_end\n"
+                    + "print_violation2(N,A,B,C,D,AInstance,AType,AOriginator,ARole,ATime) :- (\n"
+                    + "    output_start,name_output(N),value_output(A,B),\n"
+                    + "    value_output(C,D),entry_output(AInstance,AType,AOriginator,ARole,ATime),output_end\n"
                     + ").\n"
-                    + "print_violation1(N,A,B) :- (\n"
-                    + "    output_start,name_output(N),\n"
-                    + "    values_start,value_output(A,B),output_end\n"
+                    + "print_violation1(N,A,B,AInstance,AType,AOriginator,ARole,ATime) :- (\n"
+                    + "    output_start,name_output(N),value_output(A,B),\n"
+                    + "    entry_output(AInstance,AType,AOriginator,ARole,ATime),output_end\n"
                     + ").\n";
             prolog += "\n\n%\n% RBAC\n%\n\n"
                     + "% RBAC-assignment\n"
@@ -109,7 +110,7 @@ public class Solver implements OutputListener {
                     + "no_permissions:-(\n"
                     + "    hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
                     + "    not(user(AOriginator,AType)),\n"
-                    + "    print_violation2('no_permission','user',AOriginator,'action',AType)\n"
+                    + "    print_violation2('no_permission','user',AOriginator,'action',AType,AInstance,AType,AOriginator,ARole,ATime)\n"
                     + ").\n";
             prolog += "\n\n%\n% Relations\n%\n\n"
                     + "% Relation assignments\n"
@@ -126,15 +127,17 @@ public class Solver implements OutputListener {
                     + "    no_permissions;\n"
                     + "    (hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),(\n"
                     + "        (cannot_do_u(AOriginator,AType),\n"
-                    + "        print_violation2('cannot_do_u','user',AOriginator,'action',AType));\n"
+                    + "        print_violation2('cannot_do_u','user',AOriginator,'action',AType,AInstance,AType,AOriginator,ARole,ATime));\n"
                     + "        (cannot_do_R(ARole,AType),\n"
-                    + "        print_violation2('cannot_do_R','role',ARole,'action',AType));\n"
+                    + "        print_violation2('cannot_do_R','role',ARole,'action',AType,AInstance,AType,AOriginator,ARole,ATime));\n"
                     + "        ((must_execute_u(BOriginator),not(AOriginator = BOriginator)),\n"
-                    + "        print_violation1('must_execute_u','user',AOriginator));\n"
+                    + "        print_violation1('must_execute_u','user',AOriginator,AInstance,AType,AOriginator,ARole,ATime));\n"
                     + "        ((must_execute_R(BRole),not(ARole = BRole)),\n"
-                    + "        print_violation1('must_execute_R','role',ARole))\n"
+                    + "        print_violation1('must_execute_R','role',ARole,AInstance,AType,AOriginator,ARole,ATime))\n"
                     + "    ))\n"
-                    + ").\n\n"
+                    + ").\n"
+                    + "%cannot_do_u('S2','B').\n"
+                    + "%must_execute_u('S1').\n"
                     + "% User-defined rules\n"
                     + input[2]
                     + "\n% Target rule\n"
@@ -152,6 +155,9 @@ public class Solver implements OutputListener {
             engine.addOutputListener(this);
             this.resetOutput();
             SolveInfo info = engine.solve("go.");
+            while (engine.hasOpenAlternatives()) {
+                engine.solveNext();
+            }
             return info;
         } catch (InvalidTheoryException ex) {
             System.out.println("Invalid Theory");
@@ -161,6 +167,8 @@ public class Solver implements OutputListener {
             System.out.println("File Input Error");
         } catch (ParserException ex) {
             System.out.println("Parser putt");
+        } catch (NoMoreSolutionException ex) {
+            System.out.println("Keine weiteren Lösungen");
         }
         return null;
     }
@@ -224,8 +232,8 @@ public class Solver implements OutputListener {
     /**
      * @return the output
      */
-    public String getOutput() {
-        return output;
+    public String[] getOutput() {
+        return output.split("\\n");
     }
 
     /**
@@ -233,5 +241,33 @@ public class Solver implements OutputListener {
      */
     private void resetOutput() {
         this.output = "";
+    }
+
+    /**
+     *
+     * @param violationStrings
+     * @return the list of violations
+     */
+    public HashList parseViolations(String[] violationStrings) {
+        HashList<Violation> violationList = new HashList<>();
+        for (String violationString : violationStrings) {
+            try {
+                Violation newV = new Violation(violationString);
+                boolean joined = false;
+                for (Violation v : violationList) {
+                    if (v.equals(newV)) {
+                        v.append(newV);
+                        joined = true;
+                        break;
+                    }
+                }
+                if (!joined) {
+                    violationList.add(newV);
+                }
+            } catch (Exception e) {
+
+            }
+        }
+        return violationList;
     }
 }

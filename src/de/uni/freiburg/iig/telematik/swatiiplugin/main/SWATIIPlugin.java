@@ -5,8 +5,10 @@ package de.uni.freiburg.iig.telematik.swatiiplugin.main;
  */
 import alice.tuprolog.*;
 import de.invation.code.toval.misc.soabase.SOABase;
+import de.invation.code.toval.types.HashList;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.lattice.RoleLattice;
+import de.uni.freiburg.iig.telematik.swatiiplugin.logic.Violation;
 import de.uni.freiburg.iig.telematik.swatiiplugin.relations.EgoRelationException;
 import de.uni.freiburg.iig.telematik.swatiiplugin.relations.Relation;
 import de.uni.freiburg.iig.telematik.swatiiplugin.relations.Relations;
@@ -23,8 +25,8 @@ public class SWATIIPlugin {
      */
     public static void main(String[] args) {
         // Create rule       
-        String rf = "rule_false:-cannot_do_u('S2','A'),must_execute_u('A').\n";
-        
+        String rf = "";
+
         // Create Relations
         Relations rels = new Relations();
         try {
@@ -32,29 +34,32 @@ public class SWATIIPlugin {
         } catch (EgoRelationException ex) {
             System.out.println("Some strange Error");
         }
-        
+
         // Create RBAC
         SOABase base = new SOABase("base");
         base.setActivities("A", "B");
         base.setSubjects("S1", "S2");
         RoleLattice lattice = new RoleLattice(Arrays.asList("R1", "R2"));
-        lattice.addRelation("R1", "R2");        
+        lattice.addRelation("R1", "R2");
         RBACModel rbac = new RBACModel("RBAC", base, lattice);
         rbac.setRightsPropagation(true);
         rbac.setRoleMembership("R1", Arrays.asList("S1"));
         rbac.setRoleMembership("R2", Arrays.asList("S2"));
         rbac.setActivityPermission("R1", "A");
-        rbac.setActivityPermission("R2", "B");        
-        
+        //rbac.setActivityPermission("R2", "B");
+
         Solver s = new Solver();
         String path = "logs/4_eyes_principle_correct_BABA.mxml";
         String[] input = {path, rels.toString(), rf.toString(), "rule_false"};
         SolveInfo info = s.solve(input, rbac);
-        String output = s.getOutput();
-        System.out.println("\n\nOUTPUT:\n=======");
-        System.out.println(output + "\n\n");
-        if(info != null && info.isSuccess()) {
-            System.out.println("Problem found");
+        System.out.println("\n\n\nOUTPUT:\n=======");
+        if (info != null && info.isSuccess()) {
+            String[] output = s.getOutput();
+            HashList<Violation> vList = s.parseViolations(output);
+            for (Violation v : vList) {
+                System.out.println(v.toString());
+            }
+            System.out.println("Problem(s) found");
         } else {
             System.out.println("No problem found");
         }
