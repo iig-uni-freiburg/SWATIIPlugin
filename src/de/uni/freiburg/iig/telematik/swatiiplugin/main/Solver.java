@@ -59,8 +59,7 @@ public class Solver {
                     + "user(U,T):-belong(U,R),role(R,T).\n"
                     + "no_permissions:-(\n"
                     + "    hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),\n"
-                    + "    not(user(AOriginator,AType),\n"
-                    + "    role(ARole,AType)),\n"
+                    + "    not(user(AOriginator,AType)),\n"
                     + "    print('no_permissions')\n"
                     + ").\n";
             prolog += "\n\n%\n% Relations\n%\n\n"
@@ -75,6 +74,7 @@ public class Solver {
             prolog += "\n\n%\n% Other rules\n%\n\n"
                     + "% Rule enforcement\n"
                     + "enforcement_breached:-(\n"
+                    + "    no_permissions;\n"
                     + "    hap(activity(AInstance,complete,AType,AOriginator,ARole),ATime),(\n"
                     + "        (cannot_do_u(AOriginator,AType),\n"
                     + "        print('cannot_do_u'),print(AOriginator),print(AType));\n"
@@ -84,14 +84,13 @@ public class Solver {
                     + "        print('must_execute_u'),print(AOriginator));\n"
                     + "        ((must_execute_R(BRole),not(ARole = BRole)),\n"
                     + "        print('must_execute_R'),print(ARole))\n"
-                    + "    );\n"
-                    + "    no_permissions\n"
+                    + "    )\n"                    
                     + ").\n\n"
                     + "% User-defined rules\n"
                     + input[2]
                     + "\n% Target rule\n"
                     + "go:-(\n"
-                    + "%    enforcement_breached;\n"
+                    + "    enforcement_breached;\n"
                     + "    " + input[3] + "\n"
                     + ").";
 
