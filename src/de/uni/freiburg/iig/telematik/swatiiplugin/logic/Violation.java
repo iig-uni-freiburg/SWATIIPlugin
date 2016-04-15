@@ -1,12 +1,11 @@
 package de.uni.freiburg.iig.telematik.swatiiplugin.logic;
 
-import de.invation.code.toval.types.HashList;
 import de.uni.freiburg.iig.telematik.sewol.log.DataAttribute;
 import de.uni.freiburg.iig.telematik.sewol.log.LockingException;
 import de.uni.freiburg.iig.telematik.sewol.log.LogEntry;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -16,11 +15,11 @@ public class Violation {
 
     private String name;
     private HashMap<String, String> values;
-    private HashList<LogEntry> entries;
+    private ArrayList<LogEntry> entries;
 
     public Violation() {
         this.values = new HashMap<>();
-        this.entries = new HashList<>();
+        this.entries = new ArrayList<>();
     }
 
     public Violation(String toParse) throws LockingException {
@@ -50,11 +49,11 @@ public class Violation {
             } else if (part.contains("</time")) {
                 long time = Long.parseLong(part.split(">")[1].split("<")[0]);
                 e.setTimestamp(new Date(time));
-            }            
+            }
         }
-        if(!e.getActivity().equals("0")) {
-            entries.add(e);
-        }        
+        if (!e.getActivity().equals("0")) {
+            this.entries.add(e);
+        }
     }
 
     public Violation(String name, String[] keyValues, int count) {
@@ -70,23 +69,20 @@ public class Violation {
         this.entries.add(e);
     }
 
-    public Violation(String name, String[] keyValues, int count, LogEntry[] e) {
+    public Violation(String name, String[] keyValues, int count, ArrayList eV) {
         this(name, keyValues, count);
-        this.entries.add(e);
+        this.entries.addAll(eV);
     }
 
     public boolean equals(Violation v) {
-        if (!this.name.equals(v.getName())) {
-            return false;
+        if (getName().equals(v.getName()) && getValues().equals(v.getValues())) {
+            return true;
         }
-        if (!this.values.equals(v.getValues())) {
-            return false;
-        }
-        return true;
+        return false;
     }
 
     public void append(Violation v) {
-        this.entries.addAll(v.getEntries());
+        getEntries().addAll(v.getEntries());
     }
 
     /**
@@ -106,7 +102,7 @@ public class Violation {
     /**
      * @return the entries
      */
-    public HashList<LogEntry> getEntries() {
+    public ArrayList<LogEntry> getEntries() {
         return entries;
     }
 
@@ -124,46 +120,39 @@ public class Violation {
         this.values = values;
     }
 
-    /**
-     * @param entries the entries to set
-     */
-    public void setEntries(HashList<LogEntry> entries) {
-        this.entries = entries;
-    }
-
     @Override
     public String toString() {
-        String echo = "There was a violation named '" + this.getName() + "' including ";
+        String echo = "There was a violation '" + getName() + "' with ";
         boolean first = true;
-        for (Map.Entry<String, String> entry : this.getValues().entrySet()) {
+        for (String key : getValues().keySet()) {
             if (!first) {
                 echo += " and ";
             }
-            echo += entry.getKey() + " '" + entry.getValue() + "'";
+            echo += key + " '" + getValues().get(key) + "'";
             first = false;
         }
-        echo += " at this entries:\n";
-        for (LogEntry entry : this.getEntries()) {
-            String instance = "0";
-            for(DataAttribute data : entry.getMetaAttributes()){
-                if(data.name.equals("instance")){
-                    instance = (String) data.value;
-                }                
+        if (!getEntries().isEmpty()) {
+            echo += " at this entries:";
+            for (LogEntry entry : getEntries()) {
+                String instance = "0";
+                for (DataAttribute data : entry.getMetaAttributes()) {
+                    if (data.name.equals("instance")) {
+                        instance = (String) data.value;
+                    }
+                }
+                String actString = "\nhap(activity(" + instance + ", complete,'";
+                actString += entry.getActivity() + "','" + entry.getOriginator() + "','";
+                actString += entry.getRole() + "')," + entry.getTimestamp().getTime() + ").";
+                echo += actString;
             }
-            String actString = "hap(activity(" + instance + ", complete,'";
-            actString += entry.getActivity() + "','" + entry.getOriginator() + "','";
-            actString += entry.getRole() + "')," + entry.getTimestamp().getTime() + ").\n";
-            echo += actString;
         }
-        return echo;
+        return echo + "\n";
     }
 
     public String shortString() {
-        String echo = "<" + this.getName();
-        boolean first = true;
-        for (Map.Entry<String, String> entry : this.getValues().entrySet()) {
-            echo += " " + entry.getKey() + "='" + entry.getValue() + "'";
-            first = false;
+        String echo = "<" + getName();
+        for (String key : getValues().keySet()) {
+            echo += " " + key + "='" + getValues().get(key) + "'";
         }
         echo += ">";
         return echo;

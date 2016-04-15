@@ -1,25 +1,25 @@
 package de.uni.freiburg.iig.telematik.swatiiplugin.main;
 
-import alice.tuprolog.*;
-import alice.tuprolog.event.OutputEvent;
-import alice.tuprolog.event.OutputListener;
-import de.invation.code.toval.parser.ParserException;
-import de.invation.code.toval.types.HashList;
-import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
+
 
 /**
  *
  * @author mosers
  */
+import alice.tuprolog.*;
+import alice.tuprolog.event.OutputEvent;
+import alice.tuprolog.event.OutputListener;
+import de.invation.code.toval.parser.ParserException;
+import de.uni.freiburg.iig.telematik.sewol.accesscontrol.rbac.RBACModel;
 import de.uni.freiburg.iig.telematik.sewol.log.LogEntry;
 import de.uni.freiburg.iig.telematik.sewol.log.LogTrace;
 import de.uni.freiburg.iig.telematik.sewol.parser.LogParser;
 import de.uni.freiburg.iig.telematik.swatiiplugin.logic.Violation;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+
 
 public class Solver implements OutputListener {
 
@@ -98,6 +98,10 @@ public class Solver implements OutputListener {
                     + "    output_start,name_output(N),value_output(A,B),\n"
                     + "    value_output(C,D),entry_output(AInstance,AType,AOriginator,ARole,ATime),output_end\n"
                     + ").\n"
+                    + "print_violation2e(N,A,B,C,D) :- (\n"
+                    + "    output_start,name_output(N),value_output(A,B),\n"
+                    + "    value_output(C,D),output_end\n"
+                    + ").\n"
                     + "print_violation1(N,A,B,AInstance,AType,AOriginator,ARole,ATime) :- (\n"
                     + "    output_start,name_output(N),value_output(A,B),\n"
                     + "    entry_output(AInstance,AType,AOriginator,ARole,ATime),output_end\n"
@@ -136,13 +140,11 @@ public class Solver implements OutputListener {
                     + "        print_violation1('must_execute_R','role',ARole,AInstance,AType,AOriginator,ARole,ATime))\n"
                     + "    ))\n"
                     + ").\n"
-                    + "%cannot_do_u('S2','B').\n"
-                    + "%must_execute_u('S1').\n"
                     + "% User-defined rules\n"
                     + input[2]
                     + "\n% Target rule\n"
-                    + "go:-(\n"
-                    + "    enforcement_breached;\n"
+                    + "go:-(\n"          
+                    + "    enforcement_breached;\n"          
                     + "    " + input[3] + "\n"
                     + ").";
 
@@ -248,9 +250,10 @@ public class Solver implements OutputListener {
      * @param violationStrings
      * @return the list of violations
      */
-    public HashList parseViolations(String[] violationStrings) {
-        HashList<Violation> violationList = new HashList<>();
+    public List parseViolations(String[] violationStrings) {
+        List<Violation> violationList = new ArrayList<>();
         for (String violationString : violationStrings) {
+            //System.out.println(violationString);            // DEBUG
             try {
                 Violation newV = new Violation(violationString);
                 boolean joined = false;
